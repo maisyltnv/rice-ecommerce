@@ -6,28 +6,28 @@ import { AddToCartButton } from "@/components/add-to-cart-button"
 const featuredProducts = [
   {
     id: 1,
-    name: "Himalayan Basmati",
-    description: "Aromatic long-grain rice with delicate flavor",
+    name: "ເຂົ້າບາສມາຕິ ຈາກຫິມາລັຍ",
+    description: "ຂ້າວເມັດຍາວຫອມ ລົດຊາດນຸ່ມນວນ",
     price: 24.99,
     originalPrice: 29.99,
     image: "/basmati-rice-grains-in-elegant-bowl.jpg",
-    badge: "Best Seller",
+    badge: "ນິຍົມສູງ",
   },
   {
     id: 2,
-    name: "Japanese Short Grain",
-    description: "Perfect for sushi and traditional dishes",
+    name: "ເຂົ້າເມັດສັ້ນຍີ່ປຸ່ນ",
+    description: "ເໝາະສຳລັບຊູຊິ ແລະອາຫານພື້ນເມືອງ",
     price: 32.99,
     image: "/japanese-short-grain-rice-in-wooden-bowl.jpg",
-    badge: "Premium",
+    badge: "ຊັ້ນດີ",
   },
   {
     id: 3,
-    name: "Wild Rice Blend",
-    description: "Nutritious mix of wild and brown rice",
+    name: "ເຂົ້າປ່າຜະສົມ",
+    description: "ສ່ວນຜະສົມຂອງເຂົ້າປ່າ ແລະເຂົ້າກ້ອງ ອຸດົມຄຸນຄ່າ",
     price: 19.99,
     image: "/wild-rice-blend-in-rustic-bowl.jpg",
-    badge: "Organic",
+    badge: "ອິນຊີ",
   },
 ]
 
@@ -36,10 +36,9 @@ export function FeaturedProducts() {
     <section className="py-16 lg:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-4">Featured Rice Varieties</h2>
+          <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-4">ສິນຄ້າແນະນຳ</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Handpicked selections from our premium collection, each variety chosen for its exceptional quality and
-            unique characteristics.
+            ຄັດສັນຢ່າງຕັ້ງໃຈຈາກຄັງຂ້າວຊັ້ນດີ ແຕ່ລະຊະນິດໂດດເດັ່ນດ້ວຍຄຸນນະພາບ ແລະອັກລັກສະນະພິເສດ.
           </p>
         </div>
 
@@ -75,7 +74,7 @@ export function FeaturedProducts() {
 
         <div className="text-center mt-12">
           <Button variant="outline" size="lg">
-            View All Products
+            ເບິ່ງສິນຄ້າທັງໝົດ
           </Button>
         </div>
       </div>

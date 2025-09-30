@@ -4,20 +4,20 @@ import { Leaf, Award, Truck } from "lucide-react"
 const features = [
   {
     icon: Leaf,
-    title: "Sustainably Sourced",
+    title: "ແຫຼ່ງຜະລິດທີ່ຍືນຍົງ",
     description:
-      "Working directly with heritage farms that practice sustainable agriculture and traditional growing methods.",
+      "ຮ່ວມມືໂດຍກົງກັບຟາມມໍລະດົກ ທີ່ປະຕິບັດການເກດຕະກໍາຍືນຍົງ ແລະວິທີປູກແບບດັ້ງເດີມ.",
   },
   {
     icon: Award,
-    title: "Premium Quality",
+    title: "ຄຸນນະພາບຊັ້ນເອກ",
     description:
-      "Each grain is carefully selected and tested to ensure the highest standards of quality and freshness.",
+      "ແຕ່ລະເມັດຖືກຄັດເລືອກ ແລະທົດສອບຢ່າງພິຖີພິຖັນ ເພື່ອໃຫ້ໄດ້ມາດຕະຖານຄຸນນະພາບ ແລະຄວາມສົດສູງສຸດ.",
   },
   {
     icon: Truck,
-    title: "Fresh Delivery",
-    description: "From farm to table in days, not months. Our efficient supply chain ensures maximum freshness.",
+    title: "ຈັດສົ່ງສົດໃໝ່",
+    description: "ຈາກຟາມເຖິງໂຕະອາຫານໃນບໍ່ກີ່ມື້ ບໍ່ໃຊ້ເດືອນ. ໂສ່ງອຸປະທານທີ່ມີປະສິດທິພາບຮັບປະກັນຄວາມສົດສູງສຸດ.",
   },
 ]
 
@@ -28,12 +28,11 @@ export function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-6">
-              Cultivating excellence through heritage and innovation
+              ປູກປັ້ນຄວາມເຢັ່ຍຍອດ ຜ່ານມໍລະດົກ ແລະນະວັດຕະກຳ
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              For three generations, we've been dedicated to bringing you the finest rice varieties from around the
-              world. Our commitment to quality, sustainability, and tradition ensures that every grain meets our
-              exacting standards.
+              ຕະລອດ 3 ຮຸ່ນ ພວກເຮົາອຸທິດຕົນນຳສົ່ງເຂົ້າຊະນິດທີ່ດີທີ່ສຸດຈາກທົ່ວໂລກມາໃຫ້ທ່ານ.
+              ຄຳມັ້ນສັນຍາຂອງເຮົາຕໍ່ຄຸນນະພາບ ຄວາມຍືນຍົງ ແລະປະເພນີ ຮັບປະກັນວ່າແຕ່ລະເມັດເຂົ້າຕອບໂຕ້ຕາມມາດຕະຖານທີ່ເຂັ້ມງວດຂອງເຮົາ.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {features.map((feature, index) => (
@@ -50,7 +49,7 @@ export function AboutSection() {
           <div className="relative">
             <img
               src="/rice-farmer-in-traditional-field-with-golden-rice-.jpg"
-              alt="Rice farming heritage"
+              alt="ມໍລະດົກການທຳນາ"
               className="w-full h-auto rounded-lg shadow-lg"
             />
           </div>

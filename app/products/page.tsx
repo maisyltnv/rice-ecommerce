@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
+import { AddToCartButton } from "@/components/add-to-cart-button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -38,7 +39,7 @@ export default function ProductsPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
           <div className="text-center mb-12">
-            <h1 className="font-playfair text-4xl font-bold text-foreground mb-4">ສູນລວມເຂົ້າເກຣດດີ</h1>
+            <h1 className="font-playfair text-4xl font-bold text-foreground mb-4">ສູນລວມຂ້າວຊັ້ນດີ</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               ພວກເຮົາໄດ້ຄັດສັນຂ້າວຊັ້ນນໍາຢ່າງພິຖີພິຖັນ ທົ່ວປະເທດລາວ.
             </p>
@@ -63,12 +64,12 @@ export default function ProductsPage() {
             <div className="w-full sm:w-48">
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder="ຈັດຮຽງຕາມ" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name">Name A-Z</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="name">ຊື່ A-Z</SelectItem>
+                  <SelectItem value="price-low">ລາຄາ: ຕ່ຳ → ສູງ</SelectItem>
+                  <SelectItem value="price-high">ລາຄາ: ສູງ → ຕ່ຳ</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -93,7 +94,7 @@ export default function ProductsPage() {
                       )}
                       {!product.inStock && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Badge variant="destructive">Out of Stock</Badge>
+                          <Badge variant="destructive">ສິນຄ້າໝົດ</Badge>
                         </div>
                       )}
                     </div>
@@ -113,9 +114,7 @@ export default function ProductsPage() {
                           <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
                         )}
                       </div>
-                      <Button size="sm" disabled={!product.inStock}>
-                        {product.inStock ? "Add to Cart" : "Out of Stock"}
-                      </Button>
+                      <AddToCartButton productId={product.id} size="sm" />
                     </div>
                   </div>
                 </CardContent>
@@ -125,7 +124,7 @@ export default function ProductsPage() {
 
           {sortedProducts.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-lg text-muted-foreground">No products found in this category.</p>
+              <p className="text-lg text-muted-foreground">ບໍ່ພົບສິນຄ້າໃນປະເພດນີ້.</p>
             </div>
           )}
         </div>

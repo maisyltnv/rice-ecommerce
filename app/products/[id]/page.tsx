@@ -30,9 +30,9 @@ export default function ProductDetailPage() {
         <Header />
         <main className="py-16">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="text-2xl font-bold mb-4">Product Not Found</h1>
+            <h1 className="text-2xl font-bold mb-4">ບໍ່ພົບສິນຄ້າ</h1>
             <Link href="/products">
-              <Button>Back to Products</Button>
+              <Button>ຍ້ອນກັບໜ້າສິນຄ້າ</Button>
             </Link>
           </div>
         </main>
@@ -57,11 +57,11 @@ export default function ProductDetailPage() {
           {/* Breadcrumb */}
           <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
             <Link href="/" className="hover:text-foreground">
-              Home
+              ໜ້າຫຼັກ
             </Link>
             <span>/</span>
             <Link href="/products" className="hover:text-foreground">
-              Products
+              ສິນຄ້າ
             </Link>
             <span>/</span>
             <span className="text-foreground">{product.name}</span>
@@ -82,9 +82,8 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                      selectedImage === index ? "border-primary" : "border-transparent"
-                    }`}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index ? "border-primary" : "border-transparent"
+                      }`}
                   >
                     <img
                       src={image || "/placeholder.svg"}
@@ -114,17 +113,17 @@ export default function ProductDetailPage() {
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center space-x-2">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Origin: {product.origin}</span>
+                  <span className="text-sm text-muted-foreground">ແຫຼ່ງກຳເນີດ: {product.origin}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Cook time: {product.cookingTime} min</span>
+                  <span className="text-sm text-muted-foreground">ເວລາຕົ້ມ: {product.cookingTime} ນາທີ</span>
                 </div>
               </div>
 
               {/* Quantity Selector */}
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-sm font-medium">Quantity:</span>
+                <span className="text-sm font-medium">ຈຳນວນ:</span>
                 <div className="flex items-center border border-border rounded-lg">
                   <Button
                     variant="ghost"
@@ -147,28 +146,28 @@ export default function ProductDetailPage() {
                   {isAdded ? (
                     <>
                       <Check className="mr-2 h-4 w-4" />
-                      Added to Cart!
+                      ເພີ່ມໃສ່ກະຕ່າແລ້ວ!
                     </>
                   ) : (
                     <>
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      {product.inStock ? `Add to Cart - $${(product.price * quantity).toFixed(2)}` : "Out of Stock"}
+                      {product.inStock ? `ເພີ່ມໃສ່ກະຕ່າ - $${(product.price * quantity).toFixed(2)}` : "ສິນຄ້າໝົດ"}
                     </>
                   )}
                 </Button>
                 <Button variant="outline" size="lg">
                   <Heart className="mr-2 h-4 w-4" />
-                  Save
+                  ບັນທຶກ
                 </Button>
                 <Button variant="outline" size="lg">
                   <Share2 className="mr-2 h-4 w-4" />
-                  Share
+                  ແບ່ງປັນ
                 </Button>
               </div>
 
               {/* Features */}
               <div>
-                <h3 className="font-semibold mb-3">Key Features</h3>
+                <h3 className="font-semibold mb-3">ຈຸດເດັ່ນ</h3>
                 <ul className="space-y-2">
                   {product.features.map((feature, index) => (
                     <li key={index} className="flex items-center space-x-2">
@@ -184,30 +183,30 @@ export default function ProductDetailPage() {
           {/* Product Details Tabs */}
           <Tabs defaultValue="nutrition" className="mb-16">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="nutrition">Nutrition Facts</TabsTrigger>
-              <TabsTrigger value="cooking">Cooking Guide</TabsTrigger>
-              <TabsTrigger value="storage">Storage Tips</TabsTrigger>
+              <TabsTrigger value="nutrition">ຂໍ້ມູນໂພຊະນາການ</TabsTrigger>
+              <TabsTrigger value="cooking">ຄູ່ມືການຕົ້ມ</TabsTrigger>
+              <TabsTrigger value="storage">ເກັບຮັກສາ</TabsTrigger>
             </TabsList>
             <TabsContent value="nutrition" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Nutrition Facts (per 100g cooked)</h3>
+                  <h3 className="font-semibold mb-4">ຂໍ້ມູນໂພຊະນາການ (ຕໍ່ 100g ສຸກ)</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{product.nutritionFacts.calories}</div>
-                      <div className="text-sm text-muted-foreground">Calories</div>
+                      <div className="text-sm text-muted-foreground">ແຄລໍລີ</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{product.nutritionFacts.protein}g</div>
-                      <div className="text-sm text-muted-foreground">Protein</div>
+                      <div className="text-sm text-muted-foreground">ໂປຣຕີນ</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{product.nutritionFacts.carbs}g</div>
-                      <div className="text-sm text-muted-foreground">Carbs</div>
+                      <div className="text-sm text-muted-foreground">ຄາບໂບໄຮເດຣດ</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-primary">{product.nutritionFacts.fiber}g</div>
-                      <div className="text-sm text-muted-foreground">Fiber</div>
+                      <div className="text-sm text-muted-foreground">ໃຍອາຫານ</div>
                     </div>
                   </div>
                 </CardContent>
@@ -216,22 +215,22 @@ export default function ProductDetailPage() {
             <TabsContent value="cooking" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Perfect Cooking Instructions</h3>
+                  <h3 className="font-semibold mb-4">ຄູ່ມືຕົ້ມໃຫ້ອົບອຸ່ນ</h3>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Rice to Water Ratio</h4>
+                      <h4 className="font-medium mb-2">ສັດສ່ວນ ເຂົ້າ : ນ້ຳ</h4>
                       <p className="text-muted-foreground">
-                        1 cup rice to 1.5 cups water (adjust based on desired texture)
+                        ເຂົ້າ 1 ຖ້ວຍ : ນ້ຳ 1.5 ຖ້ວຍ (ປັບຕາມຄວາມນຸ່ມທີ່ຕ້ອງການ)
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">Cooking Steps</h4>
+                      <h4 className="font-medium mb-2">ຂັ້ນຕອນການຕົ້ມ</h4>
                       <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
-                        <li>Rinse rice until water runs clear</li>
-                        <li>Combine rice and water in a pot</li>
-                        <li>Bring to a boil, then reduce heat to low</li>
-                        <li>Cover and simmer for {product.cookingTime} minutes</li>
-                        <li>Let stand for 5 minutes, then fluff with a fork</li>
+                        <li>ລ້າງເຂົ້າຈົນນ້ຳໃສ</li>
+                        <li>ໃສ່ເຂົ້າກັບນ້ຳລົງໃນຫມໍ້</li>
+                        <li>ຕ້ມໃຫ້ເດືອດ ແລ້ວຫຼຸດໄຟໃຫ້ອ່ອນ</li>
+                        <li>ປິດຝາ ແລະຕົ້ມຕໍ່ {product.cookingTime} ນາທີ</li>
+                        <li>ພັກ 5 ນາທີ ແລ້ວຄຸກໃຫ້ຟູ</li>
                       </ol>
                     </div>
                   </div>
@@ -241,21 +240,21 @@ export default function ProductDetailPage() {
             <TabsContent value="storage" className="mt-6">
               <Card>
                 <CardContent className="p-6">
-                  <h3 className="font-semibold mb-4">Storage Recommendations</h3>
+                  <h3 className="font-semibold mb-4">ຄຳແນະນຳການເກັບຮັກສາ</h3>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Unopened Package</h4>
-                      <p className="text-muted-foreground">Store in a cool, dry place for up to 2 years</p>
+                      <h4 className="font-medium mb-2">ບໍ່ແກະກ່ອງ</h4>
+                      <p className="text-muted-foreground">ເກັບໄວ້ໃນທີ່ເຢັນແຫ້ງໄດ້ຖືງ 2 ປີ</p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">After Opening</h4>
+                      <h4 className="font-medium mb-2">ຫຼັງເປີດໃຊ້</h4>
                       <p className="text-muted-foreground">
-                        Transfer to an airtight container and use within 6 months for best quality
+                        ເທໄປໃສ່ພາຊະນະປິດສະນິດ ແລະໃຊ້ໃນ 6 ເດືອນ ເພື່ອຄຸນນະພາບທີ່ດີ
                       </p>
                     </div>
                     <div>
-                      <h4 className="font-medium mb-2">Cooked Rice</h4>
-                      <p className="text-muted-foreground">Refrigerate for up to 4 days or freeze for up to 6 months</p>
+                      <h4 className="font-medium mb-2">ເຂົ້າສຸກ</h4>
+                      <p className="text-muted-foreground">ແຊ່ຕູ້ເຢັນໄດ້ເຖິງ 4 ມື້ ຫຼືແຊ່ແຂງໄດ້ເຖິງ 6 ເດືອນ</p>
                     </div>
                   </div>
                 </CardContent>
@@ -266,7 +265,7 @@ export default function ProductDetailPage() {
           {/* Related Products */}
           {relatedProducts.length > 0 && (
             <div>
-              <h2 className="font-playfair text-2xl font-bold text-foreground mb-8">You Might Also Like</h2>
+              <h2 className="font-playfair text-2xl font-bold text-foreground mb-8">ອາດຈະຖືກໃຈທ່ານອີກ</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedProducts.map((relatedProduct) => (
                   <Card key={relatedProduct.id} className="group hover:shadow-lg transition-shadow duration-300">
@@ -293,7 +292,7 @@ export default function ProductDetailPage() {
                         </Link>
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-bold text-foreground">${relatedProduct.price}</span>
-                          <Button size="sm">Add to Cart</Button>
+                          <Button size="sm">ເພີ່ມໃສ່ກະຕ່າ</Button>
                         </div>
                       </div>
                     </CardContent>

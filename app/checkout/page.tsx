@@ -42,10 +42,10 @@ export default function CheckoutPage() {
         <Header />
         <main className="py-16">
           <div className="container mx-auto px-4 text-center">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-4">No Items to Checkout</h1>
-            <p className="text-lg text-muted-foreground mb-8">Your cart is empty. Add some items first.</p>
+            <h1 className="font-playfair text-3xl font-bold text-foreground mb-4">ບໍ່ມີລາຍການໃຫ້ຈ່າຍເງິນ</h1>
+            <p className="text-lg text-muted-foreground mb-8">ກະຕ່າຂອງທ່ານວ່າງເປົ່າ. ເພີ່ມສິນຄ້າກ່ອນ.</p>
             <Link href="/products">
-              <Button size="lg">Shop Rice Collection</Button>
+              <Button size="lg">ໄປໜ້າສິນຄ້າ</Button>
             </Link>
           </div>
         </main>
@@ -89,18 +89,18 @@ export default function CheckoutPage() {
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">Checkout</h1>
+            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ຊຳລະເງິນ</h1>
             <div className="flex items-center space-x-4 text-sm">
               <span className={currentStep === "shipping" ? "text-primary font-medium" : "text-muted-foreground"}>
-                1. Shipping
+                1. ຈັດສົ່ງ
               </span>
               <span className="text-muted-foreground">→</span>
               <span className={currentStep === "payment" ? "text-primary font-medium" : "text-muted-foreground"}>
-                2. Payment
+                2. ຊຳລະເງິນ
               </span>
               <span className="text-muted-foreground">→</span>
               <span className={currentStep === "processing" ? "text-primary font-medium" : "text-muted-foreground"}>
-                3. Complete
+                3. ສຳເລັດ
               </span>
             </div>
           </div>
@@ -113,11 +113,11 @@ export default function CheckoutPage() {
                 <form onSubmit={handleShippingSubmit} className="space-y-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Contact Information</CardTitle>
+                      <CardTitle>ຂໍ້ມູນຕິດຕໍ່</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="email">Email Address</Label>
+                        <Label htmlFor="email">ອີເມວ</Label>
                         <Input
                           id="email"
                           type="email"
@@ -133,13 +133,13 @@ export default function CheckoutPage() {
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
                         <Truck className="h-5 w-5" />
-                        <span>Shipping Address</span>
+                        <span>ທີ່ຢູ່ຈັດສົ່ງ</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="firstName">First Name</Label>
+                          <Label htmlFor="firstName">ຊື່</Label>
                           <Input
                             id="firstName"
                             value={formData.firstName}
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="lastName">Last Name</Label>
+                          <Label htmlFor="lastName">ນາມສະກຸນ</Label>
                           <Input
                             id="lastName"
                             value={formData.lastName}
@@ -158,7 +158,7 @@ export default function CheckoutPage() {
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="address">Address</Label>
+                        <Label htmlFor="address">ທີ່ຢູ່</Label>
                         <Input
                           id="address"
                           value={formData.address}
@@ -168,7 +168,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="city">City</Label>
+                          <Label htmlFor="city">ເມືອງ</Label>
                           <Input
                             id="city"
                             value={formData.city}
@@ -177,10 +177,10 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="state">State</Label>
+                          <Label htmlFor="state">ລັດ/ແຂວງ</Label>
                           <Select value={formData.state} onValueChange={(value) => handleInputChange("state", value)}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select state" />
+                              <SelectValue placeholder="ເລືອກລັດ/ແຂວງ" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="CA">California</SelectItem>
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="zipCode">ZIP Code</Label>
+                          <Label htmlFor="zipCode">ລະຫັດໄປສະນີ</Label>
                           <Input
                             id="zipCode"
                             value={formData.zipCode}
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="country">Country</Label>
+                          <Label htmlFor="country">ປະເທດ</Label>
                           <Select
                             value={formData.country}
                             onValueChange={(value) => handleInputChange("country", value)}
@@ -221,7 +221,7 @@ export default function CheckoutPage() {
                   </Card>
 
                   <Button type="submit" size="lg" className="w-full">
-                    Continue to Payment
+                    ໄປຫາການຊຳລະເງິນ
                   </Button>
                 </form>
               )}
@@ -239,7 +239,7 @@ export default function CheckoutPage() {
                   <PaymentForm amount={finalTotal} onSuccess={handlePaymentSuccess} onError={handlePaymentError} />
 
                   <Button variant="outline" onClick={() => setCurrentStep("shipping")} className="w-full" type="button">
-                    Back to Shipping
+                    ກັບໄປໜ້າຈັດສົ່ງ
                   </Button>
                 </div>
               )}
@@ -251,8 +251,8 @@ export default function CheckoutPage() {
                     {paymentSuccess ? (
                       <>
                         <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                        <h3 className="font-playfair text-2xl font-bold text-foreground mb-2">Payment Successful!</h3>
-                        <p className="text-muted-foreground mb-4">Processing your order...</p>
+                        <h3 className="font-playfair text-2xl font-bold text-foreground mb-2">ຊຳລະເງິນສຳເລັດ!</h3>
+                        <p className="text-muted-foreground mb-4">ກຳລັງດຳເນີນຄຳສັ່ງຊື້ຂອງທ່ານ...</p>
                         <div className="flex items-center justify-center space-x-2">
                           <div className="h-2 w-2 bg-primary rounded-full animate-bounce"></div>
                           <div
@@ -268,8 +268,8 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <div className="h-16 w-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <h3 className="font-playfair text-2xl font-bold text-foreground mb-2">Processing Payment</h3>
-                        <p className="text-muted-foreground">Please wait while we process your payment...</p>
+                        <h3 className="font-playfair text-2xl font-bold text-foreground mb-2">ກຳລັງປະມວນຜົນການຊຳລະ</h3>
+                        <p className="text-muted-foreground">ກະລຸນາລໍຖ້າ ໃນຂະນະທີ່ລະບົບກຳລັງປະມວນຜົນ...</p>
                       </>
                     )}
                   </CardContent>
@@ -281,7 +281,7 @@ export default function CheckoutPage() {
             <div>
               <Card className="sticky top-24">
                 <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+                  <CardTitle>ສະຫລຸບຄຳສັ່ງຊື້</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4 mb-6">
@@ -305,20 +305,20 @@ export default function CheckoutPage() {
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="text-muted-foreground">ລາຄາ</span>
                       <span>${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
                       <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax</span>
+                      <span className="text-muted-foreground">ອາກອນ</span>
                       <span>${tax.toFixed(2)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between font-semibold text-lg">
-                      <span>Total</span>
+                      <span>ລວມທັງໝົດ</span>
                       <span>${finalTotal.toFixed(2)}</span>
                     </div>
                   </div>

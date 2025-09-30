@@ -6,7 +6,7 @@ export function HeroSection() {
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img src="/premium-rice-grains-in-wooden-bowl-on-natural-back.jpg" alt="Premium rice varieties" className="w-full h-full object-cover" />
+        <img src="/premium-rice-grains-in-wooden-bowl-on-natural-back.jpg" alt="ຂ້າວຊັ້ນດີຫຼາກຫຼາຍ" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/60"></div>
       </div>
 
@@ -14,19 +14,18 @@ export function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 text-balance">
-            Premium heritage rice meets modern excellence
+            ຂ້າວມໍລະດົກຊັ້ນດີ ພ້ອມຄຸນນະພາບທັນສະໄໝ
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-            Discover our carefully curated collection of premium rice varieties, sourced from heritage farms and
-            delivered fresh to your table.
+            ຄົ້ນພົບຄັງຂ້າວຊັ້ນດີທີ່ຄັດເລືອກຢ່າງປະນີດ ມາຈາກຟາມມໍລະດົກ ແລະສົ່ງສົດເຖິງໂຕະອາຫານຂອງທ່ານ.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-base">
-              Shop Premium Rice
+              ຊື້ຂ້າວຊັ້ນດີ
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button variant="outline" size="lg" className="text-base bg-transparent">
-              Learn Our Story
+              ຮູ້ຈັກເຮົາເພີ່ມ
             </Button>
           </div>
         </div>

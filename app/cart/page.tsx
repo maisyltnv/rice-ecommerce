@@ -18,12 +18,12 @@ export default function CartPage() {
         <main className="py-16">
           <div className="container mx-auto px-4 text-center">
             <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
+            <h1 className="font-playfair text-3xl font-bold text-foreground mb-4">ກະຕ່າຂອງທ່ານວ່າງເປົ່າ</h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Discover our premium rice collection and add some delicious varieties to your cart.
+              ຄົ້ນພົບຄັງຂ້າວຊັ້ນດີ ແລະເພີ່ມຊະນິດອີ່ມ່ອນໃສ່ກະຕ່າຂອງທ່ານ.
             </p>
             <Link href="/products">
-              <Button size="lg">Shop Rice Collection</Button>
+              <Button size="lg">ໄປໜ້າສິນຄ້າ</Button>
             </Link>
           </div>
         </main>
@@ -40,7 +40,7 @@ export default function CartPage() {
           <div className="mb-8">
             <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
             <p className="text-muted-foreground">
-              {items.length} item{items.length !== 1 ? "s" : ""} in your cart
+              {items.length} ລາຍການໃນກະຕ່າຂອງທ່ານ
             </p>
           </div>
 
@@ -92,7 +92,7 @@ export default function CartPage() {
                           <div className="font-semibold text-foreground">
                             ${(item.product.price * item.quantity).toFixed(2)}
                           </div>
-                          <div className="text-sm text-muted-foreground">${item.product.price} each</div>
+                          <div className="text-sm text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
                         </div>
                         {/* Remove Button */}
                         <Button
@@ -111,10 +111,10 @@ export default function CartPage() {
 
               <div className="flex justify-between items-center pt-4">
                 <Button variant="outline" onClick={clearCart}>
-                  Clear Cart
+                  ລ້າງກະຕ່າ
                 </Button>
                 <Link href="/products">
-                  <Button variant="outline">Continue Shopping</Button>
+                  <Button variant="outline">ຊື້ຕໍ່</Button>
                 </Link>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span className="font-medium">{total >= 50 ? "Free" : "$5.99"}</span>
+                      <span className="font-medium">{total >= 50 ? "ຟຣີ" : "$5.99"}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
@@ -151,7 +151,7 @@ export default function CartPage() {
                   {total < 50 && (
                     <div className="bg-accent/50 p-3 rounded-lg mb-6">
                       <p className="text-sm text-accent-foreground">
-                        Add ${(50 - total).toFixed(2)} more for free shipping!
+                        ເພີ່ມອີກ ${(50 - total).toFixed(2)} ເພື່ອສົ່ງຟຣີ!
                       </p>
                     </div>
                   )}
@@ -164,7 +164,7 @@ export default function CartPage() {
 
                   <div className="mt-4 text-center">
                     <p className="text-xs text-muted-foreground">
-                      Secure checkout powered by industry-leading encryption
+                      ຊ່ອງທາງຈ່າຍເງິນປອດໄພ ດ້ວຍການເຂົ້າລະຫັດມາດຕະຖານສາກົນ
                     </p>
                   </div>
                 </CardContent>

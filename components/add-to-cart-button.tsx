@@ -32,7 +32,7 @@ export function AddToCartButton({ productId, quantity = 1, size = "default", cla
   if (!product.inStock) {
     return (
       <Button size={size} disabled className={className}>
-        Out of Stock
+        ສິນຄ້າໝົດ
       </Button>
     )
   }
@@ -42,12 +42,12 @@ export function AddToCartButton({ productId, quantity = 1, size = "default", cla
       {isAdded ? (
         <>
           <Check className="mr-2 h-4 w-4" />
-          Added!
+          ເພີ່ມແລ້ວ!
         </>
       ) : (
         <>
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          ເພີ່ມໃສ່ກະຕ່າ
         </>
       )}
     </Button>

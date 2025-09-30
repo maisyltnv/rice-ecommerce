@@ -64,8 +64,8 @@ export default function SignupPage() {
         <div className="container mx-auto px-4 max-w-md">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="font-playfair text-2xl">Create Account</CardTitle>
-              <p className="text-muted-foreground">Join Heritage Rice Co. and start shopping premium rice</p>
+              <CardTitle className="font-playfair text-2xl">ສ້າງບັນຊີ</CardTitle>
+              <p className="text-muted-foreground">ເຂົ້າຮ່ວມ Heritage Rice Co. ແລະເລີ່ມຊື້ຂ້າວຊັ້ນດີ</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,38 +76,38 @@ export default function SignupPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">ຊື່ເຕັມ</Label>
                   <Input
                     id="name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter your full name"
+                    placeholder="ປ້ອນຊື່ເຕັມຂອງທ່ານ"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">ອີເມວ</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="ປ້ອນອີເມວຂອງທ່ານ"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">ລະຫັດຜ່ານ</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Create a password"
+                      placeholder="ສ້າງລະຫັດຜ່ານ"
                       required
                     />
                     <Button
@@ -123,13 +123,13 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">ຢືນຢັນລະຫັດຜ່ານ</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
+                    placeholder="ຢືນຢັນລະຫັດຜ່ານຂອງທ່ານ"
                     required
                   />
                 </div>
@@ -138,19 +138,19 @@ export default function SignupPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
+                      ກຳລັງສ້າງບັນຊີ...
                     </>
                   ) : (
-                    "Create Account"
+                    "ສ້າງບັນຊີ"
                   )}
                 </Button>
               </form>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Already have an account?{" "}
+                  ມີບັນຊີແລ້ວບໍ?{" "}
                   <Link href="/login" className="text-primary hover:underline">
-                    Sign in
+                    ເຂົ້າສູ່ລະບົບ
                   </Link>
                 </p>
               </div>

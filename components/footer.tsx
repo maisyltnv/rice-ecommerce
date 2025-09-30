@@ -59,26 +59,26 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">ບໍລິສັດ</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="text-background/80 hover:text-background transition-colors">
-                  About Us
+                  ກ່ຽວກັບພວກເຮົາ
                 </Link>
               </li>
               <li>
                 <Link href="/sustainability" className="text-background/80 hover:text-background transition-colors">
-                  Sustainability
+                  ຄວາມຍືນຍົງ
                 </Link>
               </li>
               <li>
                 <Link href="/careers" className="text-background/80 hover:text-background transition-colors">
-                  Careers
+                  ຮ່ວມວຽກກັບເຮົາ
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="text-background/80 hover:text-background transition-colors">
-                  Contact
+                  ຕິດຕໍ່
                 </Link>
               </li>
             </ul>
@@ -86,22 +86,22 @@ export function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h3 className="font-semibold mb-4">Stay Updated</h3>
-            <p className="text-background/80 mb-4">Get the latest news about new varieties and special offers.</p>
+            <h3 className="font-semibold mb-4">ຕິດຕາມຂ່າວສານ</h3>
+            <p className="text-background/80 mb-4">ຮັບຂ່າວສານລ່າສຸດເກືອບຊະນິດໃໝ່ ແລະຂໍ້ສະເໜີພິເສດ.</p>
             <div className="flex space-x-2">
               <Input
-                placeholder="Enter your email"
+                placeholder="ປ້ອນອີເມວຂອງທ່ານ"
                 className="bg-background/10 border-background/20 text-background placeholder:text-background/60"
               />
               <Button variant="secondary" size="sm">
-                Subscribe
+                ຕິດຕາມ
               </Button>
             </div>
           </div>
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
-          <p className="text-background/60">© 2025 Heritage Rice Co. All rights reserved.</p>
+          <p className="text-background/60">© 2025 Heritage Rice Co. ສິດທິທັງໝົດຖືກສົງວນ.</p>
         </div>
       </div>
     </footer>

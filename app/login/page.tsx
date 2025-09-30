@@ -51,8 +51,8 @@ export default function LoginPage() {
         <div className="container mx-auto px-4 max-w-md">
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="font-playfair text-2xl">Welcome Back</CardTitle>
-              <p className="text-muted-foreground">Sign in to your Heritage Rice Co. account</p>
+              <CardTitle className="font-playfair text-2xl">ຍິນດີຕ້ອນຮັບກັບຄືນ</CardTitle>
+              <p className="text-muted-foreground">ເຂົ້າສູ່ບັນຊີ Heritage Rice Co. ຂອງທ່ານ</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,26 +63,26 @@ export default function LoginPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">ອີເມວ</Label>
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="ປ້ອນອີເມວຂອງທ່ານ"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">ລະຫັດຜ່ານ</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      placeholder="ປ້ອນລະຫັດຜ່ານ"
                       required
                     />
                     <Button
@@ -101,28 +101,28 @@ export default function LoginPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing In...
+                      ກຳລັງເຂົ້າສູ່...
                     </>
                   ) : (
-                    "Sign In"
+                    "ເຂົ້າສູ່ລະບົບ"
                   )}
                 </Button>
               </form>
 
               <div className="mt-6 text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Don't have an account?{" "}
+                  ບໍ່ມີບັນຊີ?{" "}
                   <Link href="/signup" className="text-primary hover:underline">
-                    Sign up
+                    ລົງທະບຽນ
                   </Link>
                 </p>
                 <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                  Forgot your password?
+                  ລືມລະຫັດຜ່ານ?
                 </Link>
               </div>
 
               <div className="mt-6 p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">Demo Accounts:</p>
+                <p className="text-sm text-muted-foreground mb-2">ບັນຊີທົດລອງ:</p>
                 <div className="text-xs space-y-1">
                   <p>
                     <strong>Admin:</strong> admin@heritagerice.com / password123

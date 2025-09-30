@@ -137,25 +137,25 @@ export function Header() {
                 href="/products"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Products
+                ສິນຄ້າ
               </Link>
               <Link
                 href="/about"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                About
+                ກ່ຽວກັບ
               </Link>
               <Link
                 href="/recipes"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Recipes
+                ສູດອາຫານ
               </Link>
               <Link
                 href="/contact"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Contact
+                ຕິດຕໍ່
               </Link>
               {isAuthenticated && user ? (
                 <>
@@ -163,26 +163,26 @@ export function Header() {
                     href="/account"
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Account Settings
+                    ຕັ້ງຄ່າບັນຊີ
                   </Link>
                   {isAdmin && (
                     <Link
                       href="/admin"
                       className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Admin Dashboard
+                      ແດຊບອດຜູ້ບໍລິຫານ
                     </Link>
                   )}
                   <Button variant="ghost" size="sm" className="justify-start" onClick={logout}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    ອອກຈາກລະບົບ
                   </Button>
                 </>
               ) : (
                 <Link href="/login">
                   <Button variant="ghost" size="sm" className="justify-start">
                     <User className="h-4 w-4 mr-2" />
-                    Sign In
+                    ເຂົ້າສູ່ລະບົບ
                   </Button>
                 </Link>
               )}
