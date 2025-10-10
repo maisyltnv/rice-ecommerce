@@ -17,7 +17,7 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || user?.email !== "admin@heritagerice.com")) {
-      router.push("/login")
+      router.push("/admin/login")
     }
   }, [isAuthenticated, isLoading, user, router])
 
