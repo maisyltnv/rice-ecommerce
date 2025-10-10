@@ -2,14 +2,13 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function AdminLoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
-    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -20,11 +19,20 @@ export default function AdminLoginPage() {
             // Simple validation
             if (email === "admin@heritagerice.com" && password === "password123") {
                 // Simulate login success
-                localStorage.setItem("admin-user", JSON.stringify({
+                localStorage.setItem("rice-user", JSON.stringify({
+                    id: "1",
                     email: "admin@heritagerice.com",
-                    name: "Admin User"
+                    name: "Admin User",
+                    address: {
+                        street: "123 Rice Street",
+                        city: "San Francisco",
+                        state: "CA",
+                        zipCode: "94102",
+                        country: "US",
+                    }
                 }))
-                router.push("/admin")
+                // Simple redirect
+                window.location.href = "/admin"
             } else {
                 setError("ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ")
             }
@@ -193,7 +201,7 @@ export default function AdminLoginPage() {
 
                 {/* Back Link */}
                 <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <a
+                    <Link
                         href="/"
                         style={{
                             color: '#6b7280',
@@ -202,7 +210,7 @@ export default function AdminLoginPage() {
                         }}
                     >
                         ← ກັບໄປໜ້າຫຼັກ
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -84,7 +84,15 @@ export function AdminSidebar() {
             Back to Store
           </Button>
         </Link>
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={logout}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start"
+          onClick={() => {
+            localStorage.removeItem("rice-user")
+            window.location.href = "/"
+          }}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out
         </Button>

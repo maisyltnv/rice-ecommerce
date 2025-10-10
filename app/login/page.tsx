@@ -131,6 +131,14 @@ export default function LoginPage() {
                     <strong>User:</strong> user@example.com / password123
                   </p>
                 </div>
+                <div className="mt-4 text-center">
+                  <Link
+                    href="/admin/login"
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    🛡️ ເຂົ້າສູ່ລະບົບ Admin
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>
