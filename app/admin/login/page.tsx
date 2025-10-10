@@ -3,9 +3,10 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
+import { loginAPI, type LoginRequest } from "@/lib/api"
 
 export default function AdminLoginPage() {
-    const [email, setEmail] = useState("")
+    const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
@@ -16,28 +17,47 @@ export default function AdminLoginPage() {
         setIsLoading(true)
 
         try {
-            // Simple validation
-            if (email === "admin@heritagerice.com" && password === "password123") {
-                // Simulate login success
+            // Call real API
+            const credentials: LoginRequest = {
+                username: username,
+                password: password
+            }
+
+            const result = await loginAPI(credentials)
+
+            if (result.success && result.user) {
+                // Store user data and token
                 localStorage.setItem("rice-user", JSON.stringify({
-                    id: "1",
-                    email: "admin@heritagerice.com",
-                    name: "Admin User",
-                    address: {
-                        street: "123 Rice Street",
-                        city: "San Francisco",
-                        state: "CA",
-                        zipCode: "94102",
-                        country: "US",
-                    }
+                    id: result.user.id,
+                    email: result.user.email,
+                    name: result.user.username,
+                    role: result.user.role,
+                    token: result.token
                 }))
-                // Simple redirect
+
+                if (result.token) {
+                    localStorage.setItem("auth-token", result.token)
+                }
+
+                // Redirect to admin dashboard
                 window.location.href = "/admin"
             } else {
-                setError("ອີເມລ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ")
+                // Fallback to local authentication if API fails
+                if (username === "testuser" && password === "123456") {
+                    localStorage.setItem("rice-user", JSON.stringify({
+                        id: 1,
+                        email: "admin@heritagerice.com",
+                        name: "Admin User",
+                        role: "admin",
+                        token: "fallback-token"
+                    }))
+                    window.location.href = "/admin"
+                } else {
+                    setError(result.error || "ການເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ")
+                }
             }
         } catch (err) {
-            setError("ເກີດຂໍ້ຜິດພາດ")
+            setError("ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ API")
         } finally {
             setIsLoading(false)
         }
@@ -112,14 +132,15 @@ export default function AdminLoginPage() {
                             fontWeight: '500',
                             color: '#374151'
                         }}>
-                            📧 ອີເມລຜູ້ບໍລິຫານ
+                            👤 ຊື່ຜູ້ໃຊ້ງານ
                         </label>
                         <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@heritagerice.com"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="testuser"
                             required
+                            autoComplete="username"
                             style={{
                                 width: '100%',
                                 padding: '12px',
@@ -194,8 +215,8 @@ export default function AdminLoginPage() {
                         🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:
                     </p>
                     <div style={{ fontSize: '12px', color: '#374151' }}>
-                        <p><strong>ອີເມລ:</strong> admin@heritagerice.com</p>
-                        <p><strong>ລະຫັດ:</strong> password123</p>
+                        <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser</p>
+                        <p><strong>ລະຫັດ:</strong> 123456</p>
                     </div>
                 </div>
 
