@@ -4,9 +4,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 export async function GET() {
     try {
-        console.log('Proxy: Fetching products from:', `${API_BASE_URL}/products`)
+        console.log('Proxy: Fetching categories from:', `${API_BASE_URL}/categories`)
 
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -23,12 +23,12 @@ export async function GET() {
         }
 
         const data = await response.json()
-        console.log('Proxy: Products fetched successfully:', data)
+        console.log('Proxy: Categories fetched successfully:', data)
 
         return NextResponse.json({
             success: true,
             data: data,
-            message: 'Products fetched successfully'
+            message: 'Categories fetched successfully'
         })
     } catch (error) {
         console.error('Proxy Error:', error)
@@ -42,10 +42,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        console.log('Proxy: Creating product:', body)
-        console.log('Proxy: Request headers:', request.headers)
+        console.log('Proxy: Creating category:', body)
 
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,18 +53,8 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify(body),
         })
 
-        console.log('Proxy: Response status:', response.status)
-        console.log('Proxy: Response ok:', response.ok)
-
         if (!response.ok) {
-            const errorText = await response.text()
-            console.log('Proxy: Error response:', errorText)
-            let errorData = {}
-            try {
-                errorData = JSON.parse(errorText)
-            } catch (e) {
-                console.log('Proxy: Could not parse error response as JSON')
-            }
+            const errorData = await response.json().catch(() => ({}))
             return NextResponse.json(
                 { success: false, error: errorData.message || `HTTP ${response.status}: ${response.statusText}` },
                 { status: response.status }
@@ -73,12 +62,12 @@ export async function POST(request: NextRequest) {
         }
 
         const data = await response.json()
-        console.log('Proxy: Product created successfully:', data)
+        console.log('Proxy: Category created successfully:', data)
 
         return NextResponse.json({
             success: true,
             data: data,
-            message: 'Product created successfully'
+            message: 'Category created successfully'
         })
     } catch (error) {
         console.error('Proxy Error:', error)

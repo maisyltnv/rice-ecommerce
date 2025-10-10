@@ -7,6 +7,7 @@ import {
   type Product,
   type CreateProductRequest
 } from "@/lib/products-api"
+import { getAllCategories, type Category } from "@/lib/categories-api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,17 +22,20 @@ import {
   RefreshCw
 } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
+import { Select } from "@/components/ui/select"
 
 interface ProductFormData {
   name: string
   price: string
   description: string
   category: string
+  category_id: string
   stock: string
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
@@ -44,12 +48,14 @@ export default function ProductsPage() {
     price: "",
     description: "",
     category: "",
+    category_id: "",
     stock: ""
   })
 
-  // Fetch products on component mount
+  // Fetch products and categories on component mount
   useEffect(() => {
     fetchProducts()
+    fetchCategories()
   }, [])
 
   const fetchProducts = async () => {
@@ -93,6 +99,22 @@ export default function ProductsPage() {
     }
   }
 
+  const fetchCategories = async () => {
+    try {
+      console.log('Fetching categories...')
+      const result = await getAllCategories()
+      console.log('Categories result:', result)
+      if (result.success && result.data) {
+        console.log('Categories data:', result.data)
+        setCategories(result.data)
+      } else {
+        console.error('Failed to fetch categories:', result.error)
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+    }
+  }
+
   const handleDelete = async (id: number, name: string) => {
     if (!confirm(`ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບສິນຄ້າ "${name || 'ສິນຄ້ານີ້'}"?`)) {
       return
@@ -132,7 +154,8 @@ export default function ProductsPage() {
       name: product.name || "",
       price: (product.price || 0).toString(),
       description: product.description || "",
-      category: product.category || "",
+      category: typeof product.category === 'string' ? product.category : product.category?.name || "",
+      category_id: product.category_id?.toString() || "",
       stock: product.stock?.toString() || ""
     })
     setShowForm(true)
@@ -145,6 +168,7 @@ export default function ProductsPage() {
       price: "",
       description: "",
       category: "",
+      category_id: "",
       stock: ""
     })
     setShowForm(true)
@@ -158,13 +182,17 @@ export default function ProductsPage() {
       const productData: CreateProductRequest = {
         name: formData.name.trim(),
         price: parseFloat(formData.price) || 0,
-        description: formData.description.trim() || undefined,
-        category: formData.category.trim() || undefined,
-        stock: formData.stock ? parseInt(formData.stock) || 0 : undefined
+        // description: formData.description.trim() || undefined,
+        // category: formData.category.trim() || undefined,
+        category_id: formData.category_id && formData.category_id !== "" ? parseInt(formData.category_id) : null,
+        // stock: formData.stock ? parseInt(formData.stock) || 0 : undefined
       }
 
+      console.log('Form data:', formData)
+      console.log('Product data to send:', productData)
+
       // Validate required fields
-      if (!productData.name) {
+      if (!productData.name || productData.name.trim() === "") {
         addToast({
           type: 'error',
           title: 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ',
@@ -173,11 +201,11 @@ export default function ProductsPage() {
         })
         return
       }
-      if (productData.price <= 0) {
+      if (!productData.price || productData.price <= 0 || isNaN(productData.price)) {
         addToast({
           type: 'error',
           title: 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ',
-          description: "ກະລຸນາປ້ອນລາຄາທີ່ຖືກຕ້ອງ",
+          description: "ກະລຸນາປ້ອນລາຄາທີ່ຖືກຕ້ອງ (ຕ້ອງເປັນຕົວເລກ)",
           duration: 3000
         })
         return
@@ -185,8 +213,10 @@ export default function ProductsPage() {
 
       if (editingProduct) {
         // Update existing product
+        console.log('Updating product:', editingProduct.id, productData)
         const { updateProduct } = await import("@/lib/products-api")
         const result = await updateProduct(editingProduct.id, productData)
+        console.log('Update result:', result)
 
         if (result.success && result.data) {
           setProducts(products.map(p => p.id === editingProduct.id ? result.data! : p))
@@ -207,8 +237,10 @@ export default function ProductsPage() {
         }
       } else {
         // Create new product
+        console.log('Creating new product:', productData)
         const { createProduct } = await import("@/lib/products-api")
         const result = await createProduct(productData)
+        console.log('Create result:', result)
 
         if (result.success && result.data) {
           setProducts([...products, result.data])
@@ -229,10 +261,11 @@ export default function ProductsPage() {
         }
       }
     } catch (err) {
+      console.error('Form submit error:', err)
       addToast({
         type: 'error',
         title: 'ເກີດຂໍ້ຜິດພາດ',
-        description: "ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່",
+        description: `ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່: ${err instanceof Error ? err.message : 'Unknown error'}`,
         duration: 5000
       })
     } finally {
@@ -241,10 +274,17 @@ export default function ProductsPage() {
   }
 
   // Filter products based on search term
-  const filteredProducts = products.filter(product =>
-    product && product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (product && product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+  const filteredProducts = products.filter(product => {
+    if (!product || !product.name) return false
+
+    const nameMatch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const categoryMatch = product.category &&
+      (typeof product.category === 'string' ?
+        product.category.toLowerCase().includes(searchTerm.toLowerCase()) :
+        product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    return nameMatch || categoryMatch
+  })
 
   // Format price for display
   const formatPrice = (price: number) => {
@@ -328,7 +368,12 @@ export default function ProductsPage() {
                 <div className="flex items-center gap-2">
                   <Package className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600">
-                    {product.category || "ບໍ່ມີໝວດໝູ່"}
+                    {typeof product.category === 'string' ? product.category :
+                      typeof product.category === 'object' ? product.category?.name || "ບໍ່ມີໝວດໝູ່" :
+                        "ບໍ່ມີໝວດໝູ່"}
+                    {product.category_id && (
+                      <span className="ml-1 text-xs text-gray-400">(ID: {product.category_id})</span>
+                    )}
                   </span>
                 </div>
 
@@ -416,12 +461,42 @@ export default function ProductsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="category">ໝວດໝູ່</Label>
-                  <Input
-                    id="category"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="ປ້ອນໝວດໝູ່ສິນຄ້າ"
+                  <Label htmlFor="category_id">ໝວດໝູ່ສິນຄ້າ</Label>
+                  <div className="mb-2 text-xs text-gray-500">
+                    Categories loaded: {categories.length}
+                  </div>
+                  <Select
+                    value={formData.category_id}
+                    onChange={(value) => {
+                      console.log('Category selected:', value)
+                      const selectedCategory = categories.find(c => c.id.toString() === value.toString())
+                      console.log('Selected category:', selectedCategory)
+
+                      // Fallback category names if categories not loaded
+                      const fallbackCategories: { [key: string]: string } = {
+                        "1": "ເຄື່ອງດື່ມ",
+                        "2": "ອາຫານ",
+                        "3": "ຂອງຫວານ"
+                      }
+
+                      setFormData({
+                        ...formData,
+                        category_id: value.toString(),
+                        category: selectedCategory?.name || fallbackCategories[value.toString()] || ""
+                      })
+                    }}
+                    options={[
+                      { value: "", label: "ເລືອກໝວດໝູ່..." },
+                      ...(categories.length > 0 ? categories.map(category => ({
+                        value: category.id,
+                        label: category.name
+                      })) : [
+                        { value: "1", label: "ເຄື່ອງດື່ມ" },
+                        { value: "2", label: "ອາຫານ" },
+                        { value: "3", label: "ຂອງຫວານ" }
+                      ])
+                    ]}
+                    placeholder="ເລືອກໝວດໝູ່..."
                   />
                 </div>
 

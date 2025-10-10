@@ -1,36 +1,21 @@
 const API_BASE_URL = "/api"
 
-export interface Product {
+export interface Category {
     id: number
     name: string
-    price: number
     description?: string
-    image?: string
-    category?: string | { id: number; name: string; description?: string }
-    category_id?: number
-    stock?: number
     created_at?: string
     updated_at?: string
 }
 
-export interface CreateProductRequest {
+export interface CreateCategoryRequest {
     name: string
-    price: number
     description?: string
-    image?: string
-    category?: string
-    category_id?: number | null
-    stock?: number
 }
 
-export interface UpdateProductRequest {
+export interface UpdateCategoryRequest {
     name?: string
-    price?: number
     description?: string
-    image?: string
-    category?: string
-    category_id?: number | null
-    stock?: number
 }
 
 export interface ApiResponse<T> {
@@ -40,12 +25,12 @@ export interface ApiResponse<T> {
     message?: string
 }
 
-// Get all products
-export async function getAllProducts(): Promise<ApiResponse<Product[]>> {
+// Get all categories
+export async function getAllCategories(): Promise<ApiResponse<Category[]>> {
     try {
-        console.log('Fetching all products from:', `${API_BASE_URL}/products`)
+        console.log('Fetching all categories from:', `${API_BASE_URL}/categories`)
 
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -73,15 +58,15 @@ export async function getAllProducts(): Promise<ApiResponse<Product[]>> {
         }
 
         const data = await response.json()
-        console.log('Products fetched successfully:', data)
+        console.log('Categories fetched successfully:', data)
 
         return {
             success: true,
             data: data.data || [],
-            message: 'Products fetched successfully'
+            message: 'Categories fetched successfully'
         }
     } catch (error) {
-        console.error('Error fetching products:', error)
+        console.error('Error fetching categories:', error)
         console.error('Error details:', {
             name: error instanceof Error ? error.name : 'Unknown',
             message: error instanceof Error ? error.message : 'Unknown error',
@@ -94,12 +79,12 @@ export async function getAllProducts(): Promise<ApiResponse<Product[]>> {
     }
 }
 
-// Get single product
-export async function getProduct(id: number): Promise<ApiResponse<Product>> {
+// Get single category
+export async function getCategory(id: number): Promise<ApiResponse<Category>> {
     try {
-        console.log('Fetching product:', `${API_BASE_URL}/products/${id}`)
+        console.log('Fetching category:', `${API_BASE_URL}/categories/${id}`)
 
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -117,15 +102,15 @@ export async function getProduct(id: number): Promise<ApiResponse<Product>> {
         }
 
         const data = await response.json()
-        console.log('Product fetched successfully:', data)
+        console.log('Category fetched successfully:', data)
 
         return {
             success: true,
-            data: data,
-            message: 'Product fetched successfully'
+            data: data.data,
+            message: 'Category fetched successfully'
         }
     } catch (error) {
-        console.error('Error fetching product:', error)
+        console.error('Error fetching category:', error)
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Network error occurred'
@@ -133,19 +118,19 @@ export async function getProduct(id: number): Promise<ApiResponse<Product>> {
     }
 }
 
-// Create product
-export async function createProduct(product: CreateProductRequest): Promise<ApiResponse<Product>> {
+// Create category
+export async function createCategory(category: CreateCategoryRequest): Promise<ApiResponse<Category>> {
     try {
-        console.log('Creating product:', `${API_BASE_URL}/products`)
-        console.log('Product data:', product)
+        console.log('Creating category:', `${API_BASE_URL}/categories`)
+        console.log('Category data:', category)
 
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify(product),
+            body: JSON.stringify(category),
             mode: 'cors',
         })
 
@@ -158,15 +143,15 @@ export async function createProduct(product: CreateProductRequest): Promise<ApiR
         }
 
         const data = await response.json()
-        console.log('Product created successfully:', data)
+        console.log('Category created successfully:', data)
 
         return {
             success: true,
-            data: data,
-            message: 'Product created successfully'
+            data: data.data,
+            message: 'Category created successfully'
         }
     } catch (error) {
-        console.error('Error creating product:', error)
+        console.error('Error creating category:', error)
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Network error occurred'
@@ -174,19 +159,19 @@ export async function createProduct(product: CreateProductRequest): Promise<ApiR
     }
 }
 
-// Update product
-export async function updateProduct(id: number, product: UpdateProductRequest): Promise<ApiResponse<Product>> {
+// Update category
+export async function updateCategory(id: number, category: UpdateCategoryRequest): Promise<ApiResponse<Category>> {
     try {
-        console.log('Updating product:', `${API_BASE_URL}/products/${id}`)
-        console.log('Update data:', product)
+        console.log('Updating category:', `${API_BASE_URL}/categories/${id}`)
+        console.log('Update data:', category)
 
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify(product),
+            body: JSON.stringify(category),
             mode: 'cors',
         })
 
@@ -199,15 +184,15 @@ export async function updateProduct(id: number, product: UpdateProductRequest): 
         }
 
         const data = await response.json()
-        console.log('Product updated successfully:', data)
+        console.log('Category updated successfully:', data)
 
         return {
             success: true,
-            data: data,
-            message: 'Product updated successfully'
+            data: data.data,
+            message: 'Category updated successfully'
         }
     } catch (error) {
-        console.error('Error updating product:', error)
+        console.error('Error updating category:', error)
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Network error occurred'
@@ -215,12 +200,12 @@ export async function updateProduct(id: number, product: UpdateProductRequest): 
     }
 }
 
-// Delete product
-export async function deleteProduct(id: number): Promise<ApiResponse<void>> {
+// Delete category
+export async function deleteCategory(id: number): Promise<ApiResponse<void>> {
     try {
-        console.log('Deleting product:', `${API_BASE_URL}/products/${id}`)
+        console.log('Deleting category:', `${API_BASE_URL}/categories/${id}`)
 
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -237,14 +222,14 @@ export async function deleteProduct(id: number): Promise<ApiResponse<void>> {
             }
         }
 
-        console.log('Product deleted successfully')
+        console.log('Category deleted successfully')
 
         return {
             success: true,
-            message: 'Product deleted successfully'
+            message: 'Category deleted successfully'
         }
     } catch (error) {
-        console.error('Error deleting product:', error)
+        console.error('Error deleting category:', error)
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Network error occurred'
