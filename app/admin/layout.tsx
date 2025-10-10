@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useAuth } from "@/lib/auth-context"
 import { AdminSidebar } from "@/components/admin-sidebar"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 
 export default function AdminLayout({
@@ -14,6 +13,12 @@ export default function AdminLayout({
 }) {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Skip authentication check for login page
+  if (pathname === "/admin/login") {
+    return <>{children}</>
+  }
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || user?.email !== "admin@heritagerice.com")) {

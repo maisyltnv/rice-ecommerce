@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import Link from "next/link"
 import { loginAPI, type LoginRequest } from "@/lib/api"
 
@@ -17,7 +16,6 @@ export default function AdminLoginPage() {
         setIsLoading(true)
 
         try {
-            // Call real API
             const credentials: LoginRequest = {
                 username: username,
                 password: password
@@ -26,7 +24,6 @@ export default function AdminLoginPage() {
             const result = await loginAPI(credentials)
 
             if (result.success && result.user) {
-                // Store user data and token
                 localStorage.setItem("rice-user", JSON.stringify({
                     id: result.user.id,
                     email: result.user.email,
@@ -39,10 +36,8 @@ export default function AdminLoginPage() {
                     localStorage.setItem("auth-token", result.token)
                 }
 
-                // Redirect to admin dashboard
                 window.location.href = "/admin"
             } else {
-                // Fallback to local authentication if API fails
                 if (username === "testuser" && password === "123456") {
                     localStorage.setItem("rice-user", JSON.stringify({
                         id: 1,
@@ -81,7 +76,6 @@ export default function AdminLoginPage() {
                 padding: '32px',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
             }}>
-                {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                     <div style={{
                         width: '64px',
@@ -109,7 +103,6 @@ export default function AdminLoginPage() {
                     </p>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSubmit}>
                     {error && (
                         <div style={{
@@ -198,7 +191,6 @@ export default function AdminLoginPage() {
                     </button>
                 </form>
 
-                {/* Demo Credentials */}
                 <div style={{
                     marginTop: '24px',
                     padding: '16px',
@@ -220,7 +212,6 @@ export default function AdminLoginPage() {
                     </div>
                 </div>
 
-                {/* Back Link */}
                 <div style={{ textAlign: 'center', marginTop: '20px' }}>
                     <Link
                         href="/"

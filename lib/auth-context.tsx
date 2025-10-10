@@ -130,7 +130,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
+    // Clear all session data
     localStorage.removeItem("rice-user")
+    localStorage.removeItem("auth-token")
+    sessionStorage.clear()
+
+    // Clear any cookies (if any)
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/")
+    })
+
+    // Update auth state
     setState({
       user: null,
       isLoading: false,

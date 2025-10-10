@@ -122,6 +122,19 @@ export function Header() {
               </Button>
             </Link>
 
+            {/* Logout Button - Visible when logged in */}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={logout}
+                className="hidden sm:flex text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                ອອກຈາກລະບົບ
+              </Button>
+            )}
+
             {/* Mobile menu button */}
             <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
               {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -173,7 +186,12 @@ export function Header() {
                       ແດຊບອດຜູ້ບໍລິຫານ
                     </Link>
                   )}
-                  <Button variant="ghost" size="sm" className="justify-start" onClick={logout}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={logout}
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     ອອກຈາກລະບົບ
                   </Button>
