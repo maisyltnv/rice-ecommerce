@@ -1,142 +1,475 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React, { useState, useEffect } from "react"
+import {
+  getAllProducts,
+  deleteProduct,
+  type Product,
+  type CreateProductRequest
+} from "@/lib/products-api"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { products } from "@/lib/data"
-import { Search, Plus, Edit, Trash2, Package } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Package,
+  Search,
+  RefreshCw
+} from "lucide-react"
+import { useToast } from "@/components/ui/toast"
 
-export default function AdminProductsPage() {
+interface ProductFormData {
+  name: string
+  price: string
+  description: string
+  category: string
+  stock: string
+}
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
+  const [showForm, setShowForm] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [formLoading, setFormLoading] = useState(false)
+  const { addToast } = useToast()
 
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-
-    return matchesSearch && matchesCategory
+  const [formData, setFormData] = useState<ProductFormData>({
+    name: "",
+    price: "",
+    description: "",
+    category: "",
+    stock: ""
   })
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
+  // Fetch products on component mount
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const fetchProducts = async () => {
+    setLoading(true)
+
+    try {
+      const result = await getAllProducts()
+      console.log('API Result:', result)
+      console.log('Products data:', result.data)
+      console.log('Products length:', result.data?.length)
+
+      if (result.success && result.data) {
+        setProducts(result.data)
+        // Only show success toast if there are products
+        if (result.data.length > 0) {
+          addToast({
+            type: 'success',
+            title: 'ໂຫຼດຂໍ້ມູນສຳເລັດ',
+            description: `ພົບສິນຄ້າ ${result.data.length} ລາຍການ`,
+            duration: 2000
+          })
+        }
+      } else {
+        addToast({
+          type: 'error',
+          title: 'ເກີດຂໍ້ຜິດພາດ',
+          description: result.error || "ເກີດຂໍ້ຜິດພາດໃນການໂຫຼດຂໍ້ມູນຈາກຖານຂໍ້ມູນ",
+          duration: 5000
+        })
+      }
+    } catch (err) {
+      console.error('Network error:', err)
+      addToast({
+        type: 'error',
+        title: 'ເກີດຂໍ້ຜິດພາດ',
+        description: `ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບຖານຂໍ້ມູນ: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        duration: 5000
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const categories = Array.from(new Set(products.map((p) => p.category)))
+  const handleDelete = async (id: number, name: string) => {
+    if (!confirm(`ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລຶບສິນຄ້າ "${name || 'ສິນຄ້ານີ້'}"?`)) {
+      return
+    }
+
+    try {
+      const result = await deleteProduct(id)
+      if (result.success) {
+        setProducts(products.filter(p => p.id !== id))
+        addToast({
+          type: 'success',
+          title: 'ລຶບສິນຄ້າສຳເລັດ',
+          description: `ລຶບສິນຄ້າ "${name}" ສຳເລັດແລ້ວ`,
+          duration: 3000
+        })
+      } else {
+        addToast({
+          type: 'error',
+          title: 'ເກີດຂໍ້ຜິດພາດ',
+          description: result.error || "ເກີດຂໍ້ຜິດພາດໃນການລຶບສິນຄ້າ",
+          duration: 5000
+        })
+      }
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'ເກີດຂໍ້ຜິດພາດ',
+        description: "ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່",
+        duration: 5000
+      })
+    }
+  }
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product)
+    setFormData({
+      name: product.name || "",
+      price: (product.price || 0).toString(),
+      description: product.description || "",
+      category: product.category || "",
+      stock: product.stock?.toString() || ""
+    })
+    setShowForm(true)
+  }
+
+  const handleAddNew = () => {
+    setEditingProduct(null)
+    setFormData({
+      name: "",
+      price: "",
+      description: "",
+      category: "",
+      stock: ""
+    })
+    setShowForm(true)
+  }
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormLoading(true)
+
+    try {
+      const productData: CreateProductRequest = {
+        name: formData.name.trim(),
+        price: parseFloat(formData.price) || 0,
+        description: formData.description.trim() || undefined,
+        category: formData.category.trim() || undefined,
+        stock: formData.stock ? parseInt(formData.stock) || 0 : undefined
+      }
+
+      // Validate required fields
+      if (!productData.name) {
+        addToast({
+          type: 'error',
+          title: 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ',
+          description: "ກະລຸນາປ້ອນຊື່ສິນຄ້າ",
+          duration: 3000
+        })
+        return
+      }
+      if (productData.price <= 0) {
+        addToast({
+          type: 'error',
+          title: 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ',
+          description: "ກະລຸນາປ້ອນລາຄາທີ່ຖືກຕ້ອງ",
+          duration: 3000
+        })
+        return
+      }
+
+      if (editingProduct) {
+        // Update existing product
+        const { updateProduct } = await import("@/lib/products-api")
+        const result = await updateProduct(editingProduct.id, productData)
+
+        if (result.success && result.data) {
+          setProducts(products.map(p => p.id === editingProduct.id ? result.data! : p))
+          addToast({
+            type: 'success',
+            title: 'ອັບເດດສິນຄ້າສຳເລັດ',
+            description: `ອັບເດດສິນຄ້າ "${productData.name}" ສຳເລັດແລ້ວ`,
+            duration: 3000
+          })
+          setShowForm(false)
+        } else {
+          addToast({
+            type: 'error',
+            title: 'ເກີດຂໍ້ຜິດພາດ',
+            description: result.error || "ເກີດຂໍ້ຜິດພາດໃນການອັບເດດສິນຄ້າ",
+            duration: 5000
+          })
+        }
+      } else {
+        // Create new product
+        const { createProduct } = await import("@/lib/products-api")
+        const result = await createProduct(productData)
+
+        if (result.success && result.data) {
+          setProducts([...products, result.data])
+          addToast({
+            type: 'success',
+            title: 'ເພີ່ມສິນຄ້າສຳເລັດ',
+            description: `ເພີ່ມສິນຄ້າ "${productData.name}" ສຳເລັດແລ້ວ`,
+            duration: 3000
+          })
+          setShowForm(false)
+        } else {
+          addToast({
+            type: 'error',
+            title: 'ເກີດຂໍ້ຜິດພາດ',
+            description: result.error || "ເກີດຂໍ້ຜິດພາດໃນການເພີ່ມສິນຄ້າ",
+            duration: 5000
+          })
+        }
+      }
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'ເກີດຂໍ້ຜິດພາດ',
+        description: "ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່",
+        duration: 5000
+      })
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  // Filter products based on search term
+  const filteredProducts = products.filter(product =>
+    product && product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product && product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  // Format price for display
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('lo-LA', {
+      style: 'currency',
+      currency: 'LAK',
+      minimumFractionDigits: 0
+    }).format(price)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>ກຳລັງໂຫຼດຂໍ້ມູນສິນຄ້າ...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="font-playfair text-3xl font-bold text-foreground">Products</h1>
-          <p className="text-muted-foreground">Manage your product catalog</p>
+          <h1 className="text-3xl font-bold text-gray-900">ຈັດການສິນຄ້າ</h1>
+          <p className="text-gray-600 mt-1">ຈັດການສິນຄ້າທັງໝົດໃນລະບົບ</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Product
+        <Button onClick={handleAddNew} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          ເພີ່ມສິນຄ້າໃໝ່
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search products..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="ຄົ້ນຫາສິນຄ້າ..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </CardContent>
       </Card>
 
+
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProducts.map((product) => (
-          <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300">
-            <CardContent className="p-0">
-              <div className="relative overflow-hidden rounded-t-lg">
-                <img
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {product.badge && (
-                  <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">{product.badge}</Badge>
-                )}
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="secondary">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+          <Card key={product.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold line-clamp-1">
+                  {product.name || 'ບໍ່ມີຊື່'}
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(product)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(product.id, product.name || 'ສິນຄ້ານີ້')}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-playfair text-lg font-semibold text-foreground">{product.name}</h3>
-                  <Badge variant={product.inStock ? "default" : "destructive"}>
-                    {product.inStock ? "In Stock" : "Out of Stock"}
-                  </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">
+                    {product.category || "ບໍ່ມີໝວດໝູ່"}
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{product.description}</p>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-foreground">{formatCurrency(product.price)}</span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through">
-                        {formatCurrency(product.originalPrice)}
-                      </span>
-                    )}
+
+                <div className="text-2xl font-bold text-primary">
+                  {formatPrice(product.price || 0)}
+                </div>
+
+                {product.description && (
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {product.description}
+                  </p>
+                )}
+
+                {product.stock !== undefined && (
+                  <div className="text-sm">
+                    <span className="text-gray-600">ສະຕ໋ອກ:</span>
+                    <span className={`ml-2 font-medium ${product.stock > 10 ? 'text-green-600' :
+                      product.stock > 0 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                      {product.stock} ຊິ້ນ
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{product.weight}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Origin: {product.origin}</span>
-                  <span>Cook: {product.cookingTime}min</span>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {/* Empty State */}
+      {filteredProducts.length === 0 && !loading && (
         <Card>
-          <CardContent className="p-12 text-center">
-            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-2">No products found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filter criteria.</p>
+          <CardContent className="text-center py-12">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              ບໍ່ມີສິນຄ້າ
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {searchTerm ? "ບໍ່ພົບສິນຄ້າທີ່ຄົ້ນຫາ" : "ເລີ່ມເພີ່ມສິນຄ້າໃໝ່"}
+            </p>
+            {!searchTerm && (
+              <Button onClick={handleAddNew}>
+                <Plus className="h-4 w-4 mr-2" />
+                ເພີ່ມສິນຄ້າໃໝ່
+              </Button>
+            )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Product Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle>
+                {editingProduct ? "ແກ້ໄຂສິນຄ້າ" : "ເພີ່ມສິນຄ້າໃໝ່"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="name">ຊື່ສິນຄ້າ *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    placeholder="ປ້ອນຊື່ສິນຄ້າ"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="price">ລາຄາ (ກີບ) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                    placeholder="ປ້ອນລາຄາ"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="category">ໝວດໝູ່</Label>
+                  <Input
+                    id="category"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="ປ້ອນໝວດໝູ່ສິນຄ້າ"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="stock">ຈຳນວນສະຕ໋ອກ</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    placeholder="ປ້ອນຈຳນວນສະຕ໋ອກ"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="description">ລາຍລະອຽດ</Label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="ປ້ອນລາຍລະອຽດສິນຄ້າ"
+                    className="w-full p-3 border border-gray-300 rounded-md resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="submit"
+                    disabled={formLoading}
+                    className="flex-1"
+                  >
+                    {formLoading ? "ກຳລັງບັນທຶກ..." : "ບັນທຶກ"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowForm(false)}
+                    className="flex-1"
+                  >
+                    ຍົກເລີກ
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   )

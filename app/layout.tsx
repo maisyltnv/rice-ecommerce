@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { CartProvider } from "@/lib/cart-context"
 import { AuthProvider } from "@/lib/auth-context"
+import { ToastProvider } from "@/components/ui/toast"
 import "./globals.css"
 
 const playfair = Playfair_Display({
@@ -47,10 +48,12 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${notoSans.variable} ${notoLao.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
-            <Suspense fallback={<div>Loading...</div>}>
-              {children}
-              <Analytics />
-            </Suspense>
+            <ToastProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                {children}
+                <Analytics />
+              </Suspense>
+            </ToastProvider>
           </CartProvider>
         </AuthProvider>
       </body>
