@@ -50,9 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem("rice-user")
+    console.log('AuthContext: Loading user from localStorage:', savedUser)
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser)
+        console.log('AuthContext: Parsed user:', user)
         setState({
           user,
           isLoading: false,
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState((prev) => ({ ...prev, isLoading: false }))
       }
     } else {
+      console.log('AuthContext: No saved user found')
       setState((prev) => ({ ...prev, isLoading: false }))
     }
   }, [])

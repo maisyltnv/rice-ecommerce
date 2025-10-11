@@ -1,5 +1,6 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
-const LOGIN_ENDPOINT = process.env.NEXT_PUBLIC_API_LOGIN_ENDPOINT || '/login'
+// Use Next.js API proxy to avoid CORS issues
+const API_BASE_URL = "/api"
+const LOGIN_ENDPOINT = "/login"
 
 export interface LoginRequest {
     username: string
@@ -34,6 +35,9 @@ export async function loginAPI(credentials: LoginRequest): Promise<LoginResponse
             mode: 'cors',
         })
 
+        console.log('Response status:', response.status)
+        console.log('Response ok:', response.ok)
+
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
             return {
@@ -45,28 +49,38 @@ export async function loginAPI(credentials: LoginRequest): Promise<LoginResponse
         const data = await response.json()
         console.log('API Response:', data)
 
-        // Handle the actual API response format
-        if (data.token) {
-            const userData = {
-                id: data.user_id || data.user?.id || 1,
-                username: data.username || data.user?.username || 'admin',
-                email: data.email || data.user?.email || 'admin@heritagerice.com',
-                role: data.role || data.user?.role || 'admin'
-            }
+        // Handle the proxy response format
+        if (data.success && data.data) {
+            const responseData = data.data
 
-            console.log('Login successful, user data:', userData)
+            if (responseData.token && responseData.user) {
+                const userData = {
+                    id: responseData.user.id,
+                    username: responseData.user.username,
+                    email: responseData.user.email,
+                    role: 'admin' // Default role for admin login
+                }
 
-            return {
-                success: true,
-                token: data.token,
-                user: userData,
-                message: data.message
+                console.log('Login successful, user data:', userData)
+
+                return {
+                    success: true,
+                    token: responseData.token,
+                    user: userData,
+                    message: responseData.message
+                }
+            } else {
+                console.log('Login failed, no token or user in response data')
+                return {
+                    success: false,
+                    error: responseData.message || 'Login failed'
+                }
             }
         } else {
-            console.log('Login failed, no token received')
+            console.log('Login failed, proxy returned error:', data.error)
             return {
                 success: false,
-                error: data.message || 'Login failed'
+                error: data.error || 'Login failed'
             }
         }
     } catch (error) {

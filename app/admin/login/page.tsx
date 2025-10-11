@@ -2,9 +2,11 @@
 
 import React, { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { loginAPI, type LoginRequest } from "@/lib/api"
 
 export default function AdminLoginPage() {
+    const router = useRouter()
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
@@ -21,38 +23,56 @@ export default function AdminLoginPage() {
                 password: password
             }
 
+            console.log('Attempting login with credentials:', credentials)
             const result = await loginAPI(credentials)
+            console.log('Login result:', result)
 
-            if (result.success && result.user) {
+            if (result.success && result.user && result.token) {
+                console.log('Login successful, storing user data:', result.user)
+
                 localStorage.setItem("rice-user", JSON.stringify({
                     id: result.user.id,
                     email: result.user.email,
                     name: result.user.username,
-                    role: result.user.role,
+                    role: result.user.role || 'admin',
                     token: result.token
                 }))
 
-                if (result.token) {
-                    localStorage.setItem("auth-token", result.token)
-                }
+                localStorage.setItem("auth-token", result.token)
 
-                window.location.href = "/admin"
-            } else {
-                if (username === "testuser" && password === "123456") {
-                    localStorage.setItem("rice-user", JSON.stringify({
-                        id: 1,
-                        email: "admin@heritagerice.com",
-                        name: "Admin User",
-                        role: "admin",
-                        token: "fallback-token"
-                    }))
+                console.log('Redirecting to admin dashboard...')
+                // Use router.push for better navigation
+                router.push("/admin")
+                // Also try window.location as fallback
+                setTimeout(() => {
                     window.location.href = "/admin"
+                }, 100)
+            } else {
+                console.log('Login failed:', result.error)
+                // Fallback authentication for demo
+                if (username === "testuser2" && password === "123456") {
+                    console.log('Using fallback authentication')
+                    localStorage.setItem("rice-user", JSON.stringify({
+                        id: 2,
+                        email: "newemail@example.com",
+                        name: "testuser2",
+                        role: "admin",
+                        token: "demo-token"
+                    }))
+                    localStorage.setItem("auth-token", "demo-token")
+
+                    console.log('Fallback login successful, redirecting...')
+                    router.push("/admin")
+                    setTimeout(() => {
+                        window.location.href = "/admin"
+                    }, 100)
                 } else {
                     setError(result.error || "ການເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ")
                 }
             }
         } catch (err) {
-            setError("ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ API")
+            console.error('Login error:', err)
+            setError(`ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ API: ${err instanceof Error ? err.message : 'Unknown error'}`)
         } finally {
             setIsLoading(false)
         }
@@ -207,7 +227,7 @@ export default function AdminLoginPage() {
                         🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:
                     </p>
                     <div style={{ fontSize: '12px', color: '#374151' }}>
-                        <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser</p>
+                        <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser2</p>
                         <p><strong>ລະຫັດ:</strong> 123456</p>
                     </div>
                 </div>

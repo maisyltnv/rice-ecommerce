@@ -21,7 +21,9 @@ export default function AdminLayout({
   }
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.email !== "admin@heritagerice.com")) {
+    console.log('Admin layout auth check:', { isLoading, isAuthenticated, user })
+    if (!isLoading && (!isAuthenticated || !user)) {
+      console.log('Redirecting to login - not authenticated or no user')
       router.push("/admin/login")
     }
   }, [isAuthenticated, isLoading, user, router])
@@ -37,9 +39,12 @@ export default function AdminLayout({
     )
   }
 
-  if (!isAuthenticated || user?.email !== "admin@heritagerice.com") {
+  if (!isAuthenticated || !user) {
+    console.log('Admin layout: Not authenticated or no user, returning null')
     return null
   }
+
+  console.log('Admin layout: User authenticated, rendering admin layout')
 
   return (
     <div className="flex h-screen bg-background">
