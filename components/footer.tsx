@@ -108,7 +108,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
-          <p className="text-background/60">© 2025 Heritage Rice Co. ສິດທິທັງໝົດຖືກສົງວນ.</p>
+          <p className="text-background/60">© 2025 ເຂົ້າດີ. ສິດທິທັງໝົດຖືກສະຫງວນ.</p>
         </div>
       </div>
     </footer>

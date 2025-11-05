@@ -32,7 +32,7 @@ const notoSans = Noto_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Heritage Rice Co. - Premium Quality Rice",
+  title: "ເຂົ້າດີ",
   description:
     "Discover our premium collection of heritage rice varieties, sourced from the finest farms and delivered fresh to your table.",
   generator: "v0.app",

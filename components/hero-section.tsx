@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -20,13 +21,17 @@ export function HeroSection() {
             ຄົ້ນພົບຄັງຂ້າວຊັ້ນດີທີ່ຄັດເລືອກຢ່າງປະນີດ ມາຈາກຟາມມໍລະດົກ ແລະສົ່ງສົດເຖິງໂຕະອາຫານຂອງທ່ານ.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-base">
-              ຊື້ຂ້າວຊັ້ນດີ
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="lg" className="text-base bg-transparent">
-              ຮູ້ຈັກເຮົາເພີ່ມ
-            </Button>
+            <Link href="/products">
+              <Button size="lg" className="text-base">
+                ຊື້ຂ້າວຊັ້ນດີ
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/about">
+              <Button variant="outline" size="lg" className="text-base bg-transparent">
+                ຮູ້ຈັກເຮົາເພີ່ມ
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
