@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { AddToCartButton } from "@/components/add-to-cart-button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 import { products, categories } from "@/lib/data"
 import Link from "next/link"
 
@@ -62,16 +62,16 @@ export default function ProductsPage() {
               </div>
             </div>
             <div className="w-full sm:w-48">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue placeholder="ຈັດຮຽງຕາມ" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">ຊື່ A-Z</SelectItem>
-                  <SelectItem value="price-low">ລາຄາ: ຕ່ຳ → ສູງ</SelectItem>
-                  <SelectItem value="price-high">ລາຄາ: ສູງ → ຕ່ຳ</SelectItem>
-                </SelectContent>
-              </Select>
+              <Select
+                value={sortBy}
+                onChange={(value) => setSortBy(value.toString())}
+                options={[
+                  { value: "name", label: "ຊື່ A-Z" },
+                  { value: "price-low", label: "ລາຄາ: ຕ່ຳ → ສູງ" },
+                  { value: "price-high", label: "ລາຄາ: ສູງ → ຕ່ຳ" }
+                ]}
+                placeholder="ຈັດຮຽງຕາມ"
+              />
             </div>
           </div>
 
