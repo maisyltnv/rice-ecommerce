@@ -3,7 +3,14 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { loginAPI, type LoginRequest } from "@/lib/api"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Shield, ArrowLeft, Loader2 } from "lucide-react"
 
 export default function AdminLoginPage() {
     const router = useRouter()
@@ -86,7 +93,7 @@ export default function AdminLoginPage() {
             alignItems: 'center',
             justifyContent: 'center',
             padding: '20px',
-            fontFamily: 'system-ui, sans-serif'
+            fontFamily: 'var(--font-noto-sans-lao), "Noto Sans Lao", sans-serif'
         }}>
             <div style={{
                 width: '100%',
@@ -100,15 +107,19 @@ export default function AdminLoginPage() {
                     <div style={{
                         width: '64px',
                         height: '64px',
-                        backgroundColor: '#3b82f6',
-                        borderRadius: '50%',
                         margin: '0 auto 16px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '24px'
+                        justifyContent: 'center'
                     }}>
-                        🛡️
+                        <Image
+                            src="/riceLogo.png"
+                            alt="Rice Logo"
+                            width={64}
+                            height={64}
+                            style={{ objectFit: 'contain' }}
+                            priority
+                        />
                     </div>
                     <h1 style={{
                         fontSize: '28px',
@@ -196,7 +207,7 @@ export default function AdminLoginPage() {
                         disabled={isLoading}
                         style={{
                             width: '100%',
-                            backgroundColor: isLoading ? '#9ca3af' : '#3b82f6',
+                            backgroundColor: isLoading ? '#9ca3af' : '#2d7a3d',
                             color: 'white',
                             padding: '12px',
                             border: 'none',
@@ -204,10 +215,27 @@ export default function AdminLoginPage() {
                             fontSize: '16px',
                             fontWeight: '600',
                             cursor: isLoading ? 'not-allowed' : 'pointer',
-                            transition: 'background-color 0.2s'
+                            transition: 'background-color 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
                         }}
                     >
-                        {isLoading ? 'ກຳລັງກວດສອບ...' : '🛡️ ເຂົ້າສູ່ລະບົບຜູ້ບໍລິຫານ'}
+                        {isLoading ? (
+                            'ກຳລັງກວດສອບ...'
+                        ) : (
+                            <>
+                                <Image
+                                    src="/riceLogo.png"
+                                    alt=""
+                                    width={20}
+                                    height={20}
+                                    style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+                                />
+                                ເຂົ້າສູ່ລະບົບຜູ້ບໍລິຫານ
+                            </>
+                        )}
                     </button>
                 </form>
 
@@ -222,9 +250,19 @@ export default function AdminLoginPage() {
                         fontSize: '12px',
                         color: '#6b7280',
                         marginBottom: '8px',
-                        fontWeight: '500'
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
                     }}>
-                        🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:
+                        <Image
+                            src="/riceLogo.png"
+                            alt=""
+                            width={16}
+                            height={16}
+                            style={{ objectFit: 'contain' }}
+                        />
+                        ຂໍ້ມູນບັນຊີທົດລອງ:
                     </p>
                     <div style={{ fontSize: '12px', color: '#374151' }}>
                         <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser3 (ຫຼື testuser2)</p>
