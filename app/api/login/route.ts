@@ -35,13 +35,20 @@ export async function POST(request: NextRequest) {
         }
 
         const data = await response.json()
-        console.log('Login Proxy: Login successful:', data)
+        console.log('Login Proxy: Backend response:', JSON.stringify(data, null, 2))
+        console.log('Login Proxy: Has token?', !!data.token)
+        console.log('Login Proxy: Has user?', !!data.user)
 
-        return NextResponse.json({
+        // Wrap the backend response
+        const wrappedResponse = {
             success: true,
             data: data,
-            message: 'Login successful'
-        })
+            message: data.message || 'Login successful'
+        }
+
+        console.log('Login Proxy: Wrapped response:', JSON.stringify(wrappedResponse, null, 2))
+
+        return NextResponse.json(wrappedResponse)
     } catch (error) {
         console.error('Login Proxy Error:', error)
         return NextResponse.json(

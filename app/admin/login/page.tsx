@@ -50,12 +50,12 @@ export default function AdminLoginPage() {
             } else {
                 console.log('Login failed:', result.error)
                 // Fallback authentication for demo
-                if (username === "testuser2" && password === "123456") {
-                    console.log('Using fallback authentication')
+                if ((username === "testuser2" || username === "testuser3") && password === "123456") {
+                    console.log('Using fallback authentication for:', username)
                     localStorage.setItem("rice-user", JSON.stringify({
                         id: 2,
                         email: "newemail@example.com",
-                        name: "testuser2",
+                        name: username,
                         role: "admin",
                         token: "demo-token"
                     }))
@@ -227,7 +227,7 @@ export default function AdminLoginPage() {
                         🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:
                     </p>
                     <div style={{ fontSize: '12px', color: '#374151' }}>
-                        <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser2</p>
+                        <p><strong>ຊື່ຜູ້ໃຊ້:</strong> testuser3 (ຫຼື testuser2)</p>
                         <p><strong>ລະຫັດ:</strong> 123456</p>
                     </div>
                 </div>

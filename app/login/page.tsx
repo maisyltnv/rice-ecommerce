@@ -12,17 +12,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/lib/auth-context"
+import { loginAPI, type LoginRequest } from "@/lib/api"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const { login } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,14 +30,38 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const result = await login(email, password)
-      if (result.success) {
-        router.push("/")
+      const credentials: LoginRequest = {
+        username: username,
+        password: password
+      }
+
+      console.log('Login: Attempting login with credentials:', credentials)
+      const result = await loginAPI(credentials)
+      console.log('Login: Login result:', result)
+
+      if (result.success && result.user && result.token) {
+        console.log('Login: Login successful, storing user data:', result.user)
+
+        // Store user data in localStorage
+        localStorage.setItem("rice-user", JSON.stringify({
+          id: result.user.id,
+          email: result.user.email || username + "@example.com",
+          name: result.user.username,
+          role: result.user.role || 'user',
+          token: result.token
+        }))
+
+        localStorage.setItem("auth-token", result.token)
+
+        // Reload page to update auth context
+        window.location.href = "/"
       } else {
-        setError(result.error || "Login failed")
+        console.log('Login: Login failed:', result.error)
+        setError(result.error || "ການເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ")
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      console.error('Login: Login error:', err)
+      setError(`ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ API: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
@@ -63,14 +86,15 @@ export default function LoginPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">ອີເມວ</Label>
+                  <Label htmlFor="username">ຊື່ຜູ້ໃຊ້ງານ</Label>
                   <Input
-                    id="email"
+                    id="username"
                     type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ປ້ອນອີເມວຂອງທ່ານ"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="ປ້ອນຊື່ຜູ້ໃຊ້ງານ"
                     required
+                    autoComplete="username"
                   />
                 </div>
 
@@ -122,13 +146,13 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-6 p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">ບັນຊີທົດລອງ:</p>
+                <p className="text-sm text-muted-foreground mb-2">🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:</p>
                 <div className="text-xs space-y-1">
                   <p>
-                    <strong>Admin:</strong> admin@heritagerice.com / password123
+                    <strong>ຊື່ຜູ້ໃຊ້:</strong> testuser3
                   </p>
                   <p>
-                    <strong>User:</strong> user@example.com / password123
+                    <strong>ລະຫັດຜ່ານ:</strong> 123456
                   </p>
                 </div>
                 <div className="mt-4 text-center">

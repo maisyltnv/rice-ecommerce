@@ -47,40 +47,54 @@ export async function loginAPI(credentials: LoginRequest): Promise<LoginResponse
         }
 
         const data = await response.json()
-        console.log('API Response:', data)
+        console.log('API Response:', JSON.stringify(data, null, 2))
 
-        // Handle the proxy response format
+        // Handle the proxy response format - the proxy wraps the backend response in data.data
+        let responseData = null
+        
         if (data.success && data.data) {
-            const responseData = data.data
-
-            if (responseData.token && responseData.user) {
-                const userData = {
-                    id: responseData.user.id,
-                    username: responseData.user.username,
-                    email: responseData.user.email,
-                    role: 'admin' // Default role for admin login
-                }
-
-                console.log('Login successful, user data:', userData)
-
-                return {
-                    success: true,
-                    token: responseData.token,
-                    user: userData,
-                    message: responseData.message
-                }
-            } else {
-                console.log('Login failed, no token or user in response data')
-                return {
-                    success: false,
-                    error: responseData.message || 'Login failed'
-                }
-            }
+            // Proxy wrapped response: { success: true, data: { token, user, message } }
+            responseData = data.data
+            console.log('Using proxy wrapped response:', responseData)
+        } else if (data.token && data.user) {
+            // Direct backend response: { token, user, message }
+            responseData = data
+            console.log('Using direct backend response:', responseData)
         } else {
-            console.log('Login failed, proxy returned error:', data.error)
+            console.log('Login failed, unexpected response structure:', data)
             return {
                 success: false,
-                error: data.error || 'Login failed'
+                error: data.message || data.error || 'Login failed - unexpected response format'
+            }
+        }
+
+        // Extract token and user from responseData
+        if (responseData && responseData.token && responseData.user) {
+            const userData = {
+                id: responseData.user.id,
+                username: responseData.user.username,
+                email: responseData.user.email,
+                role: 'admin' // Default role for admin login
+            }
+
+            console.log('Login successful, user data:', userData)
+            console.log('Token received:', responseData.token.substring(0, 20) + '...')
+
+            return {
+                success: true,
+                token: responseData.token,
+                user: userData,
+                message: responseData.message || 'Login successful'
+            }
+        } else {
+            console.log('Login failed, missing token or user in response:', {
+                hasToken: !!responseData?.token,
+                hasUser: !!responseData?.user,
+                responseData
+            })
+            return {
+                success: false,
+                error: responseData?.message || responseData?.error || 'Login failed - missing token or user data'
             }
         }
     } catch (error) {
