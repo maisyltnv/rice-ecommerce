@@ -31,6 +31,8 @@ interface ProductFormData {
   category: string
   category_id: string
   stock: string
+  imageFile: File | null
+  imagePreviewUrl: string
 }
 
 export default function ProductsPage() {
@@ -49,7 +51,9 @@ export default function ProductsPage() {
     description: "",
     category: "",
     category_id: "",
-    stock: ""
+    stock: "",
+    imageFile: null,
+    imagePreviewUrl: ""
   })
 
   // Fetch products and categories on component mount
@@ -156,7 +160,9 @@ export default function ProductsPage() {
       description: product.description || "",
       category: typeof product.category === 'string' ? product.category : product.category?.name || "",
       category_id: product.category_id?.toString() || "",
-      stock: product.stock?.toString() || ""
+      stock: product.stock?.toString() || "",
+      imageFile: null,
+      imagePreviewUrl: typeof product.image === 'string' ? product.image : ""
     })
     setShowForm(true)
   }
@@ -169,7 +175,9 @@ export default function ProductsPage() {
       description: "",
       category: "",
       category_id: "",
-      stock: ""
+      stock: "",
+      imageFile: null,
+      imagePreviewUrl: ""
     })
     setShowForm(true)
   }
@@ -187,6 +195,11 @@ export default function ProductsPage() {
         // Send camelCase too for backends that expect it
         categoryId: formData.category_id && formData.category_id !== "" ? parseInt(formData.category_id) : null,
         stock: formData.stock && formData.stock !== "" ? parseInt(formData.stock) : undefined
+      }
+
+      // Only include image if user selected one
+      if (formData.imageFile) {
+        productData.image = formData.imageFile
       }
 
       console.log('Form data:', formData)
@@ -500,6 +513,28 @@ export default function ProductsPage() {
                     ]}
                     placeholder="ເລືອກໝວດໝູ່..."
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="image">ຮູບສິນຄ້າ</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files && e.target.files[0] ? e.target.files[0] : null
+                      setFormData({
+                        ...formData,
+                        imageFile: file,
+                        imagePreviewUrl: file ? URL.createObjectURL(file) : formData.imagePreviewUrl
+                      })
+                    }}
+                  />
+                  {(formData.imagePreviewUrl) && (
+                    <div className="mt-2">
+                      <img src={formData.imagePreviewUrl} alt="preview" className="h-24 w-24 object-cover rounded" />
+                    </div>
+                  )}
                 </div>
 
                 <div>

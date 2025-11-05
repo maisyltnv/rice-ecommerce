@@ -41,13 +41,19 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json()
-        console.log('Proxy: Creating product:', body)
-        console.log('Proxy: Request headers:', request.headers)
+        // Accept multipart/form-data from the client
+        const incoming = await request.formData()
+        console.log('Proxy: Creating product (multipart)')
+
+        // Rebuild FormData (avoid passing Next's FormData directly across fetch boundaries)
+        const formData = new FormData()
+        for (const [key, value] of incoming.entries()) {
+            formData.append(key, value as any)
+        }
 
         const authHeader = request.headers.get('Authorization')
         const headers: HeadersInit = {
-            'Content-Type': 'application/json',
+            // Do not set Content-Type; fetch will set boundary for FormData
             'Accept': 'application/json',
         }
         if (authHeader) {
@@ -57,7 +63,7 @@ export async function POST(request: NextRequest) {
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(body),
+            body: formData,
         })
 
         console.log('Proxy: Response status:', response.status)

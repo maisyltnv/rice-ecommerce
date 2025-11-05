@@ -17,7 +17,8 @@ export interface CreateProductRequest {
     name: string
     price: number
     description?: string
-    image?: string
+    // When creating, allow uploading a file or passing an existing URL/path
+    image?: File | string
     category?: string
     category_id?: number | null
     // Some backends expect camelCase - send both for compatibility
@@ -29,7 +30,8 @@ export interface UpdateProductRequest {
     name?: string
     price?: number
     description?: string
-    image?: string
+    // For updates, allow file upload or keep existing string path
+    image?: File | string | null
     category?: string
     category_id?: number | null
     // Some backends expect camelCase - send both for compatibility
@@ -140,22 +142,36 @@ export async function getProduct(id: number): Promise<ApiResponse<Product>> {
 // Create product
 export async function createProduct(product: CreateProductRequest): Promise<ApiResponse<Product>> {
     try {
-        console.log('Creating product:', `${API_BASE_URL}/products`)
-        console.log('Product data:', product)
-
+        console.log('Creating product (multipart):', `${API_BASE_URL}/products`)
         const token = localStorage.getItem('auth-token')
+
+        // Always use FormData to support file uploads
+        const formData = new FormData()
+        formData.append('name', product.name)
+        formData.append('price', product.price.toString())
+        if (product.description) formData.append('description', product.description)
+        if (product.stock !== undefined) formData.append('stock', String(product.stock))
+        const categoryIdVal = product.categoryId ?? product.category_id
+        if (categoryIdVal !== undefined && categoryIdVal !== null) {
+            formData.append('category_id', String(categoryIdVal))
+        }
+        if (product.image instanceof File) {
+            formData.append('image', product.image)
+        } else if (typeof product.image === 'string' && product.image) {
+            // If backend supports passing an existing image path
+            formData.append('image', product.image)
+        }
+
         const headers: HeadersInit = {
-            'Content-Type': 'application/json',
+            // Do NOT set Content-Type for FormData; browser will set boundary
             'Accept': 'application/json',
         }
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`
-        }
+        if (token) headers['Authorization'] = `Bearer ${token}`
 
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: 'POST',
             headers,
-            body: JSON.stringify(product),
+            body: formData,
             mode: 'cors',
         })
 
@@ -187,22 +203,40 @@ export async function createProduct(product: CreateProductRequest): Promise<ApiR
 // Update product
 export async function updateProduct(id: number, product: UpdateProductRequest): Promise<ApiResponse<Product>> {
     try {
-        console.log('Updating product:', `${API_BASE_URL}/products/${id}`)
-        console.log('Update data:', product)
+        console.log('Updating product (multipart):', `${API_BASE_URL}/products/${id}`)
 
         const token = localStorage.getItem('auth-token')
+
+        // Use FormData to support optional image updates
+        const formData = new FormData()
+        if (product.name !== undefined) formData.append('name', product.name)
+        if (product.price !== undefined) formData.append('price', String(product.price))
+        if (product.description !== undefined && product.description !== null) {
+            formData.append('description', product.description)
+        }
+        if (product.stock !== undefined) formData.append('stock', String(product.stock))
+        const categoryIdVal = product.categoryId ?? product.category_id
+        if (categoryIdVal !== undefined && categoryIdVal !== null) {
+            formData.append('category_id', String(categoryIdVal))
+        }
+        if (product.image instanceof File) {
+            formData.append('image', product.image)
+        } else if (product.image === null) {
+            // Optional: explicitly clear image if backend supports it
+            formData.append('image', '')
+        } else if (typeof product.image === 'string' && product.image) {
+            formData.append('image', product.image)
+        }
+
         const headers: HeadersInit = {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
         }
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`
-        }
+        if (token) headers['Authorization'] = `Bearer ${token}`
 
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'PUT',
             headers,
-            body: JSON.stringify(product),
+            body: formData,
             mode: 'cors',
         })
 

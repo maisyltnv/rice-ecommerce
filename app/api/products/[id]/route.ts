@@ -49,22 +49,26 @@ export async function PUT(
 ) {
     try {
         const { id } = params
-        const body = await request.json()
-        console.log('Proxy: Updating product:', `${API_BASE_URL}/products/${id}`, body)
+        console.log('Proxy: Updating product (multipart):', `${API_BASE_URL}/products/${id}`)
 
         const authHeader = request.headers.get('Authorization')
         const headers: HeadersInit = {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
         }
         if (authHeader) {
             headers['Authorization'] = authHeader
         }
 
+        const incoming = await request.formData()
+        const formData = new FormData()
+        for (const [key, value] of incoming.entries()) {
+            formData.append(key, value as any)
+        }
+
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'PUT',
             headers,
-            body: JSON.stringify(body),
+            body: formData,
         })
 
         if (!response.ok) {
