@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, LogOut, Home, FolderOpen } from "lucide-react"
@@ -53,8 +54,14 @@ export function AdminSidebar() {
     <div className="flex h-full w-64 flex-col bg-card border-r border-border">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
-        <Link href="/admin" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-full bg-primary"></div>
+        <Link href="/admin" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+          <Image
+            src="/riceLogo.png"
+            alt="Heritage Rice Logo"
+            width={32}
+            height={32}
+            className="h-8 w-auto object-contain"
+          />
           <span className="font-playfair text-lg font-semibold">Admin Panel</span>
         </Link>
       </div>

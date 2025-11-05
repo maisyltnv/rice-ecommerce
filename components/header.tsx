@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,8 +27,15 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary"></div>
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Image
+              src="/riceLogo.png"
+              alt="Heritage Rice Logo"
+              width={40}
+              height={40}
+              className="h-8 w-auto object-contain"
+              priority
+            />
             <span className="font-playfair text-xl font-semibold text-foreground">ເຂົ້າດີ</span>
           </Link>
 
