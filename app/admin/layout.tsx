@@ -47,9 +47,9 @@ export default function AdminLayout({
   console.log('Admin layout: User authenticated, rendering admin layout')
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex flex-col md:flex-row h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto w-full md:w-auto">{children}</main>
     </div>
   )
 }

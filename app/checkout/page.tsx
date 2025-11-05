@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { PaymentForm } from "@/components/payment-form"
@@ -88,18 +88,18 @@ export default function CheckoutPage() {
       <Header />
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ຊຳລະເງິນ</h1>
-            <div className="flex items-center space-x-4 text-sm">
-              <span className={currentStep === "shipping" ? "text-primary font-medium" : "text-muted-foreground"}>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-4">ຊຳລະເງິນ</h1>
+            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm overflow-x-auto pb-2">
+              <span className={currentStep === "shipping" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 1. ຈັດສົ່ງ
               </span>
               <span className="text-muted-foreground">→</span>
-              <span className={currentStep === "payment" ? "text-primary font-medium" : "text-muted-foreground"}>
+              <span className={currentStep === "payment" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 2. ຊຳລະເງິນ
               </span>
               <span className="text-muted-foreground">→</span>
-              <span className={currentStep === "processing" ? "text-primary font-medium" : "text-muted-foreground"}>
+              <span className={currentStep === "processing" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 3. ສຳເລັດ
               </span>
             </div>
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="firstName">ຊື່</Label>
                           <Input
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="city">ເມືອງ</Label>
                           <Input
@@ -178,20 +178,20 @@ export default function CheckoutPage() {
                         </div>
                         <div>
                           <Label htmlFor="state">ລັດ/ແຂວງ</Label>
-                          <Select value={formData.state} onValueChange={(value) => handleInputChange("state", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="ເລືອກລັດ/ແຂວງ" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="CA">California</SelectItem>
-                              <SelectItem value="NY">New York</SelectItem>
-                              <SelectItem value="TX">Texas</SelectItem>
-                              <SelectItem value="FL">Florida</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Select
+                            value={formData.state}
+                            onChange={(value) => handleInputChange("state", value.toString())}
+                            options={[
+                              { value: "CA", label: "California" },
+                              { value: "NY", label: "New York" },
+                              { value: "TX", label: "Texas" },
+                              { value: "FL", label: "Florida" }
+                            ]}
+                            placeholder="ເລືອກລັດ/ແຂວງ"
+                          />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="zipCode">ລະຫັດໄປສະນີ</Label>
                           <Input
@@ -205,16 +205,13 @@ export default function CheckoutPage() {
                           <Label htmlFor="country">ປະເທດ</Label>
                           <Select
                             value={formData.country}
-                            onValueChange={(value) => handleInputChange("country", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="US">United States</SelectItem>
-                              <SelectItem value="CA">Canada</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            onChange={(value) => handleInputChange("country", value.toString())}
+                            options={[
+                              { value: "US", label: "United States" },
+                              { value: "CA", label: "Canada" }
+                            ]}
+                            placeholder="ເລືອກປະເທດ"
+                          />
                         </div>
                       </div>
                     </CardContent>
@@ -279,11 +276,11 @@ export default function CheckoutPage() {
 
             {/* Order Summary */}
             <div>
-              <Card className="sticky top-24">
+              <Card className="lg:sticky lg:top-24">
                 <CardHeader>
-                  <CardTitle>ສະຫລຸບຄຳສັ່ງຊື້</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">ສະຫລຸບຄຳສັ່ງຊື້</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4 mb-6">
                     {items.map((item) => (
                       <div key={item.product.id} className="flex items-center space-x-3">

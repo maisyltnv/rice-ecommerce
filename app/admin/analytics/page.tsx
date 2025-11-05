@@ -125,17 +125,17 @@ export default function AdminAnalyticsPage() {
     const maxOrders = Math.max(...mockAnalytics.salesByMonth.map(m => m.orders))
 
     return (
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 md:p-6 pt-20 md:pt-6">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-foreground">ວິເຄາະຂໍ້ມູນ</h1>
-                <p className="text-muted-foreground">ສະຖິຕິ ແລະ ການວິເຄາະຂໍ້ມູນການຂາຍ</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ວິເຄາະຂໍ້ມູນ</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">ສະຖິຕິ ແລະ ການວິເຄາະຂໍ້ມູນການຂາຍ</p>
             </div>
 
             {/* Time Range Selector */}
             <Card className="mb-6">
                 <CardContent className="p-4">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <span className="text-sm font-medium">ໄລຍະເວລາ:</span>
                         <Select
                             value={timeRange}
@@ -146,7 +146,7 @@ export default function AdminAnalyticsPage() {
                                 { value: "90", label: "90 ວັນຜ່ານມາ" },
                                 { value: "365", label: "1 ປີຜ່ານມາ" }
                             ]}
-                            className="w-48"
+                            className="w-full sm:w-48"
                         />
                     </div>
                 </CardContent>

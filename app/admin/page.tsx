@@ -42,11 +42,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 pt-20 md:pt-6">
       {/* Header */}
       <div>
-        <h1 className="font-playfair text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your store.</p>
+        <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's what's happening with your store.</p>
       </div>
 
       {/* Stats Cards */}

@@ -307,14 +307,14 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 md:p-6 space-y-6 pt-20 md:pt-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">ຈັດການສິນຄ້າ</h1>
-          <p className="text-gray-600 mt-1">ຈັດການສິນຄ້າທັງໝົດໃນລະບົບ</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">ຈັດການສິນຄ້າ</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">ຈັດການສິນຄ້າທັງໝົດໃນລະບົບ</p>
         </div>
-        <Button onClick={handleAddNew} className="flex items-center gap-2">
+        <Button onClick={handleAddNew} className="flex items-center gap-2 w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           ເພີ່ມສິນຄ້າໃໝ່
         </Button>

@@ -37,37 +37,83 @@ export default function CartPage() {
       <Header />
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               {items.length} ລາຍການໃນກະຕ່າຂອງທ່ານ
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <Card key={item.product.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {/* Product Image */}
+                      <div className="flex-shrink-0 self-center sm:self-start">
                         <img
                           src={item.product.image || "/placeholder.svg"}
                           alt={item.product.name}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-24 h-24 sm:w-20 sm:h-20 object-cover rounded-lg"
                         />
                       </div>
+                      
+                      {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <Link href={`/products/${item.product.id}`}>
-                          <h3 className="font-playfair text-lg font-semibold text-foreground hover:text-primary transition-colors">
+                          <h3 className="font-playfair text-base sm:text-lg font-semibold text-foreground hover:text-primary transition-colors mb-2">
                             {item.product.name}
                           </h3>
                         </Link>
-                        <p className="text-sm text-muted-foreground mb-2">{item.product.description}</p>
-                        <p className="text-sm text-muted-foreground">Weight: {item.product.weight}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{item.product.description}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">Weight: {item.product.weight}</p>
+                        
+                        {/* Mobile: Quantity and Price Row */}
+                        <div className="flex flex-col sm:hidden gap-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">ຈຳນວນ:</span>
+                            <div className="flex items-center border border-border rounded-lg">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="px-2 py-1 text-center min-w-[2rem] text-sm">{item.quantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-foreground">
+                              ${(item.product.price * item.quantity).toFixed(2)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.product.id)}
+                              className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="text-xs text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-4">
+                      
+                      {/* Desktop: Quantity, Price, Remove */}
+                      <div className="hidden sm:flex items-center space-x-4">
                         {/* Quantity Controls */}
                         <div className="flex items-center border border-border rounded-lg">
                           <Button
@@ -88,11 +134,11 @@ export default function CartPage() {
                           </Button>
                         </div>
                         {/* Price */}
-                        <div className="text-right">
+                        <div className="text-right min-w-[80px]">
                           <div className="font-semibold text-foreground">
                             ${(item.product.price * item.quantity).toFixed(2)}
                           </div>
-                          <div className="text-sm text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
+                          <div className="text-xs text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
                         </div>
                         {/* Remove Button */}
                         <Button
@@ -109,20 +155,20 @@ export default function CartPage() {
                 </Card>
               ))}
 
-              <div className="flex justify-between items-center pt-4">
-                <Button variant="outline" onClick={clearCart}>
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4">
+                <Button variant="outline" onClick={clearCart} className="w-full sm:w-auto">
                   ລ້າງກະຕ່າ
                 </Button>
-                <Link href="/products">
-                  <Button variant="outline">ຊື້ຕໍ່</Button>
+                <Link href="/products" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">ຊື້ຕໍ່</Button>
                 </Link>
               </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardContent className="p-6">
+              <Card className="lg:sticky lg:top-24">
+                <CardContent className="p-4 sm:p-6">
                   <h2 className="font-playfair text-xl font-semibold text-foreground mb-4">ສະຫລຸບຄຳສັ່ງຊື້</h2>
 
                   <div className="space-y-3 mb-6">

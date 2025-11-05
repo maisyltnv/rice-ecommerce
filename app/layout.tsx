@@ -36,6 +36,7 @@ export const metadata: Metadata = {
   description:
     "Discover our premium collection of heritage rice varieties, sourced from the finest farms and delivered fresh to your table.",
   generator: "v0.app",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 }
 
 export default function RootLayout({

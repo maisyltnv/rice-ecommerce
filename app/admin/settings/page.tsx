@@ -106,11 +106,11 @@ export default function AdminSettingsPage() {
     ]
 
     return (
-        <div className="flex-1 p-6">
+        <div className="flex-1 p-4 md:p-6 pt-20 md:pt-6">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-foreground">ຕັ້ງຄ່າລະບົບ</h1>
-                <p className="text-muted-foreground">ຈັດການການຕັ້ງຄ່າລະບົບທັງໝົດ</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">ຕັ້ງຄ່າລະບົບ</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">ຈັດການການຕັ້ງຄ່າລະບົບທັງໝົດ</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
