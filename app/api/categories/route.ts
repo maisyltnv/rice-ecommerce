@@ -44,12 +44,18 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         console.log('Proxy: Creating category:', body)
 
+        const authHeader = request.headers.get('Authorization')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (authHeader) {
+            headers['Authorization'] = authHeader
+        }
+
         const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(body),
         })
 

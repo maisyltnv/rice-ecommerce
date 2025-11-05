@@ -45,12 +45,18 @@ export async function POST(request: NextRequest) {
         console.log('Proxy: Creating product:', body)
         console.log('Proxy: Request headers:', request.headers)
 
+        const authHeader = request.headers.get('Authorization')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (authHeader) {
+            headers['Authorization'] = authHeader
+        }
+
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(body),
         })
 

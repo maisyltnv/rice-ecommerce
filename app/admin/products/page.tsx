@@ -182,10 +182,11 @@ export default function ProductsPage() {
       const productData: CreateProductRequest = {
         name: formData.name.trim(),
         price: parseFloat(formData.price) || 0,
-        // description: formData.description.trim() || undefined,
-        // category: formData.category.trim() || undefined,
+        description: formData.description.trim() || undefined,
         category_id: formData.category_id && formData.category_id !== "" ? parseInt(formData.category_id) : null,
-        // stock: formData.stock ? parseInt(formData.stock) || 0 : undefined
+        // Send camelCase too for backends that expect it
+        categoryId: formData.category_id && formData.category_id !== "" ? parseInt(formData.category_id) : null,
+        stock: formData.stock && formData.stock !== "" ? parseInt(formData.stock) : undefined
       }
 
       console.log('Form data:', formData)
@@ -219,7 +220,8 @@ export default function ProductsPage() {
         console.log('Update result:', result)
 
         if (result.success && result.data) {
-          setProducts(products.map(p => p.id === editingProduct.id ? result.data! : p))
+          // Refetch products to ensure we have the latest category data
+          await fetchProducts()
           addToast({
             type: 'success',
             title: 'ອັບເດດສິນຄ້າສຳເລັດ',
@@ -488,7 +490,7 @@ export default function ProductsPage() {
                     options={[
                       { value: "", label: "ເລືອກໝວດໝູ່..." },
                       ...(categories.length > 0 ? categories.map(category => ({
-                        value: category.id,
+                        value: category.id.toString(),
                         label: category.name
                       })) : [
                         { value: "1", label: "ເຄື່ອງດື່ມ" },

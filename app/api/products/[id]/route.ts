@@ -52,12 +52,18 @@ export async function PUT(
         const body = await request.json()
         console.log('Proxy: Updating product:', `${API_BASE_URL}/products/${id}`, body)
 
+        const authHeader = request.headers.get('Authorization')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (authHeader) {
+            headers['Authorization'] = authHeader
+        }
+
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(body),
         })
 
@@ -94,12 +100,18 @@ export async function DELETE(
         const { id } = params
         console.log('Proxy: Deleting product:', `${API_BASE_URL}/products/${id}`)
 
+        const authHeader = request.headers.get('Authorization')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (authHeader) {
+            headers['Authorization'] = authHeader
+        }
+
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
         })
 
         if (!response.ok) {

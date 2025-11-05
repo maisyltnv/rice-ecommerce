@@ -124,12 +124,18 @@ export async function createCategory(category: CreateCategoryRequest): Promise<A
         console.log('Creating category:', `${API_BASE_URL}/categories`)
         console.log('Category data:', category)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/categories`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(category),
             mode: 'cors',
         })
@@ -165,12 +171,18 @@ export async function updateCategory(id: number, category: UpdateCategoryRequest
         console.log('Updating category:', `${API_BASE_URL}/categories/${id}`)
         console.log('Update data:', category)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(category),
             mode: 'cors',
         })
@@ -205,12 +217,18 @@ export async function deleteCategory(id: number): Promise<ApiResponse<void>> {
     try {
         console.log('Deleting category:', `${API_BASE_URL}/categories/${id}`)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             mode: 'cors',
         })
 

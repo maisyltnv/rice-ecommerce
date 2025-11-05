@@ -20,6 +20,8 @@ export interface CreateProductRequest {
     image?: string
     category?: string
     category_id?: number | null
+    // Some backends expect camelCase - send both for compatibility
+    categoryId?: number | null
     stock?: number
 }
 
@@ -30,6 +32,8 @@ export interface UpdateProductRequest {
     image?: string
     category?: string
     category_id?: number | null
+    // Some backends expect camelCase - send both for compatibility
+    categoryId?: number | null
     stock?: number
 }
 
@@ -139,12 +143,18 @@ export async function createProduct(product: CreateProductRequest): Promise<ApiR
         console.log('Creating product:', `${API_BASE_URL}/products`)
         console.log('Product data:', product)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/products`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(product),
             mode: 'cors',
         })
@@ -180,12 +190,18 @@ export async function updateProduct(id: number, product: UpdateProductRequest): 
         console.log('Updating product:', `${API_BASE_URL}/products/${id}`)
         console.log('Update data:', product)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             body: JSON.stringify(product),
             mode: 'cors',
         })
@@ -220,12 +236,18 @@ export async function deleteProduct(id: number): Promise<ApiResponse<void>> {
     try {
         console.log('Deleting product:', `${API_BASE_URL}/products/${id}`)
 
+        const token = localStorage.getItem('auth-token')
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+        }
+
         const response = await fetch(`${API_BASE_URL}/products/${id}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers,
             mode: 'cors',
         })
 
