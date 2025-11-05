@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -8,15 +8,59 @@ import { AddToCartButton } from "@/components/add-to-cart-button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
-import { products, categories } from "@/lib/data"
+import { getAllProducts, type Product } from "@/lib/products-api"
 import Link from "next/link"
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("name")
+  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
 
-  const filteredProducts = products.filter(
-    (product) => selectedCategory === "all" || product.category === selectedCategory,
+  useEffect(() => {
+    let isMounted = true
+    const load = async () => {
+      setLoading(true)
+      const res = await getAllProducts()
+      if (isMounted && res.success && res.data) {
+        setProducts(res.data)
+      }
+      setLoading(false)
+    }
+    load()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const getCategoryKey = (p: Product): string => {
+    if (!p) return "uncategorized"
+    if (typeof p.category === "object" && p.category?.id != null) return p.category.id.toString()
+    if (typeof p.category === "string" && p.category.trim() !== "") return p.category
+    if (p.category_id != null) return p.category_id.toString()
+    return "uncategorized"
+  }
+
+  const getCategoryLabel = (p: Product): string => {
+    if (typeof p.category === "object") return p.category?.name || "ບໍ່ມີໝວດໝູ່"
+    if (typeof p.category === "string" && p.category.trim() !== "") return p.category
+    return "ບໍ່ມີໝວດໝູ່"
+  }
+
+  const categoryOptions = useMemo(() => {
+    const counts: Record<string, { id: string; name: string; count: number }> = {}
+    for (const p of products) {
+      const key = getCategoryKey(p)
+      const name = getCategoryLabel(p)
+      counts[key] = counts[key]
+        ? { ...counts[key], count: counts[key].count + 1 }
+        : { id: key, name, count: 1 }
+    }
+    return [{ id: "all", name: "ທັງໝົດ", count: products.length }, ...Object.values(counts)]
+  }, [products])
+
+  const filteredProducts = products.filter((product) =>
+    selectedCategory === "all" ? true : getCategoryKey(product) === selectedCategory,
   )
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -26,7 +70,7 @@ export default function ProductsPage() {
       case "price-high":
         return b.price - a.price
       case "name":
-        return a.name.localeCompare(b.name)
+        return (a.name || "").localeCompare(b.name || "")
       default:
         return 0
     }
@@ -49,7 +93,7 @@ export default function ProductsPage() {
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="flex-1">
               <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
+                {categoryOptions.map((category) => (
                   <Button
                     key={category.id}
                     variant={selectedCategory === category.id ? "default" : "outline"}
@@ -84,15 +128,16 @@ export default function ProductsPage() {
                     <div className="relative overflow-hidden rounded-t-lg">
                       <img
                         src={product.image || "/placeholder.svg"}
-                        alt={product.name}
+                        alt={product.name || "product"}
                         className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
-                      {product.badge && (
+                      {/* API may not provide these fields; hide when not present */}
+                      {false && (
                         <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
-                          {product.badge}
+
                         </Badge>
                       )}
-                      {!product.inStock && (
+                      {false && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                           <Badge variant="destructive">ສິນຄ້າໝົດ</Badge>
                         </div>
@@ -105,14 +150,12 @@ export default function ProductsPage() {
                         {product.name}
                       </h3>
                     </Link>
-                    <p className="text-muted-foreground mb-2">{product.description}</p>
-                    <p className="text-sm text-muted-foreground mb-4">Origin: {product.origin}</p>
+                    {product.description && (
+                      <p className="text-muted-foreground mb-2">{product.description}</p>
+                    )}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <span className="text-xl font-bold text-foreground">${product.price}</span>
-                        {product.originalPrice && (
-                          <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
-                        )}
                       </div>
                       <AddToCartButton productId={product.id} size="sm" />
                     </div>
