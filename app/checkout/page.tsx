@@ -34,7 +34,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "US",
+    country: "LA",
   })
 
   if (items.length === 0) {
@@ -208,10 +208,10 @@ export default function CheckoutPage() {
                             value={formData.country}
                             onChange={(value) => handleInputChange("country", value.toString())}
                             options={[
-                              { value: "US", label: "United States" },
-                              { value: "CA", label: "Canada" }
+                              { value: "LA", label: "ປະເທດລາວ" },
                             ]}
                             placeholder="ເລືອກປະເທດ"
+                            disabled
                           />
                         </div>
                       </div>
