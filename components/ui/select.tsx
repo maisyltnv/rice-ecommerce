@@ -12,7 +12,7 @@ interface SelectOption {
 interface SelectProps {
   value?: string | number
   onChange: (value: string | number) => void
-  options: SelectOption[]
+  options?: SelectOption[]
   placeholder?: string
   disabled?: boolean
   className?: string
@@ -31,9 +31,9 @@ export function Select({
   const selectRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  console.log('Select props:', { value, options, placeholder })
-  const selectedOption = options.find(option => option.value.toString() === value.toString())
-  console.log('Selected option:', selectedOption)
+  // Ensure options is always an array
+  const safeOptions = options || []
+  const selectedOption = safeOptions.find(option => option.value.toString() === value?.toString())
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -49,21 +49,17 @@ export function Select({
     }
   }, [])
 
-  const filteredOptions = options.filter(option =>
+  const filteredOptions = safeOptions.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  console.log('Filtered options:', filteredOptions)
-
   const handleSelect = (option: SelectOption) => {
-    console.log('handleSelect called with:', option)
     onChange(option.value)
     setIsOpen(false)
     setSearchTerm("")
   }
 
   const handleToggle = () => {
-    console.log('handleToggle called, disabled:', disabled, 'isOpen:', isOpen)
     if (!disabled) {
       setIsOpen(!isOpen)
       if (!isOpen) {

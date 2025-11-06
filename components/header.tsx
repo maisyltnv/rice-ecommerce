@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ShoppingCart, Menu, X, User, LogOut, Settings, Shield } from "lucide-react"
+import { ShoppingCart, Menu, X, User, LogOut, Settings, Shield, Package } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
 
@@ -118,6 +118,16 @@ export function Header() {
               </Link>
             )}
 
+            {/* Orders Button - Visible when authenticated */}
+            {isAuthenticated && (
+              <Link href="/orders">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  <Package className="h-4 w-4 mr-2" />
+                  ປະຫວັດຄຳສັ່ງຊື້
+                </Button>
+              </Link>
+            )}
+
             {/* Shopping Cart */}
             <Link href="/cart">
               <Button variant="ghost" size="sm" className="relative">
@@ -180,6 +190,13 @@ export function Header() {
               </Link>
               {isAuthenticated && user ? (
                 <>
+                  <Link
+                    href="/orders"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    ປະຫວັດຄຳສັ່ງຊື້
+                  </Link>
                   <Link
                     href="/account"
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
