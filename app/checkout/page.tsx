@@ -183,10 +183,24 @@ export default function CheckoutPage() {
                             value={formData.state}
                             onChange={(value) => handleInputChange("state", value.toString())}
                             options={[
-                              { value: "CA", label: "California" },
-                              { value: "NY", label: "New York" },
-                              { value: "TX", label: "Texas" },
-                              { value: "FL", label: "Florida" }
+                              { value: "AT", label: "ແຂວງ ອັດຕະປື" },
+                              { value: "BK", label: "ແຂວງ ບໍ່ແກ້ວ" },
+                              { value: "BL", label: "ແຂວງ ບໍລິຄໍາໄຊ" },
+                              { value: "CH", label: "ແຂວງ ຈໍາປາສັກ" },
+                              { value: "HO", label: "ແຂວງ ຫົວພັນ" },
+                              { value: "KH", label: "ແຂວງ ຄໍາມ່ວນ" },
+                              { value: "LN", label: "ແຂວງ ຫຼວງນໍ້າທາ" },
+                              { value: "LP", label: "ແຂວງ ຫຼວງພະບາງ" },
+                              { value: "OU", label: "ແຂວງ ອຸດົມໄຊ" },
+                              { value: "PH", label: "ແຂວງ ຜົ້ງສາລີ" },
+                              { value: "SK", label: "ແຂວງ ເຊກອງ" },
+                              { value: "SL", label: "ແຂວງ ສາລະວັນ" },
+                              { value: "SV", label: "ແຂວງ ສະຫວັນນະເຂດ" },
+                              { value: "VT", label: "ນະຄອນຫຼວງວຽງຈັນ" },
+                              { value: "VI", label: "ແຂວງ ວຽງຈັນ" },
+                              { value: "XA", label: "ແຂວງ ຊຽງຂວາງ" },
+                              { value: "XS", label: "ແຂວງ ໄຊສົມບູນ" },
+                              { value: "XY", label: "ແຂວງ ໄຊຍະບູລີ" }
                             ]}
                             placeholder="ເລືອກແຂວງ"
                           />
