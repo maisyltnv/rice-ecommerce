@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { formatPrice } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { mockOrders } from "@/lib/admin-data"
@@ -26,10 +27,7 @@ export default function AdminOrdersPage() {
   })
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
+    return formatPrice(amount)
   }
 
   const formatDate = (dateString: string) => {

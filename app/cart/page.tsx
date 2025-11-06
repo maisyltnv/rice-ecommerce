@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useCart } from "@/lib/cart-context"
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function CartPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart()
@@ -54,9 +55,13 @@ export default function CartPage() {
                       {/* Product Image */}
                       <div className="flex-shrink-0 self-center sm:self-start">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
+                          src={item.product.image || "/noimage.png"}
                           alt={item.product.name}
                           className="w-24 h-24 sm:w-20 sm:h-20 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/noimage.png"
+                          }}
                         />
                       </div>
                       
@@ -97,7 +102,7 @@ export default function CartPage() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-semibold text-foreground">
-                              ${(item.product.price * item.quantity).toFixed(2)}
+                              {formatPrice(item.product.price * item.quantity)}
                             </span>
                             <Button
                               variant="ghost"
@@ -108,7 +113,7 @@ export default function CartPage() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                          <div className="text-xs text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
+                          <div className="text-xs text-muted-foreground">{formatPrice(item.product.price)} ຕໍ່ຊິ້ນ</div>
                         </div>
                       </div>
                       
@@ -136,9 +141,9 @@ export default function CartPage() {
                         {/* Price */}
                         <div className="text-right min-w-[80px]">
                           <div className="font-semibold text-foreground">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.product.price * item.quantity)}
                           </div>
-                          <div className="text-xs text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
+                          <div className="text-xs text-muted-foreground">{formatPrice(item.product.price)} ຕໍ່ຊິ້ນ</div>
                         </div>
                         {/* Remove Button */}
                         <Button
@@ -174,21 +179,21 @@ export default function CartPage() {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ລາຄາ</span>
-                      <span className="font-medium">${total.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(total)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span className="font-medium">{total >= 50 ? "ຟຣີ" : "$5.99"}</span>
+                      <span className="font-medium">{total >= 50 ? "ຟຣີ" : formatPrice(5.99)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
-                      <span className="font-medium">${(total * 0.08).toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(total * 0.08)}</span>
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex justify-between">
                         <span className="text-lg font-semibold text-foreground">ລວມທັງໝົດ</span>
                         <span className="text-lg font-semibold text-foreground">
-                          ${(total + (total >= 50 ? 0 : 5.99) + total * 0.08).toFixed(2)}
+                          {formatPrice(total + (total >= 50 ? 0 : 5.99) + total * 0.08)}
                         </span>
                       </div>
                     </div>
@@ -197,7 +202,7 @@ export default function CartPage() {
                   {total < 50 && (
                     <div className="bg-accent/50 p-3 rounded-lg mb-6">
                       <p className="text-sm text-accent-foreground">
-                        ເພີ່ມອີກ ${(50 - total).toFixed(2)} ເພື່ອສົ່ງຟຣີ!
+                        ເພີ່ມອີກ {formatPrice(50 - total)} ເພື່ອສົ່ງຟຣີ!
                       </p>
                     </div>
                   )}

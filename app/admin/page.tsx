@@ -4,15 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { DollarSign, Package, ShoppingCart, Users, Eye, Badge, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function AdminDashboard() {
   console.log('AdminDashboard: Rendering simple dashboard')
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
+    return formatPrice(amount)
   }
 
   const formatDate = (dateString: string) => {

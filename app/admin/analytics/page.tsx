@@ -17,6 +17,7 @@ import {
     ArrowUpRight,
     ArrowDownRight
 } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 
 // Mock analytics data
 const mockAnalytics = {
@@ -79,11 +80,7 @@ export default function AdminAnalyticsPage() {
     const [selectedMetric, setSelectedMetric] = useState("revenue")
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("lo-LA", {
-            style: "currency",
-            currency: "LAK",
-            minimumFractionDigits: 0
-        }).format(amount)
+        return formatPrice(amount)
     }
 
     const getGrowthIcon = (growth: number) => {

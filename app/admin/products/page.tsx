@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { useToast } from "@/components/ui/toast"
 import { Select } from "@/components/ui/select"
+import { formatPrice } from "@/lib/utils"
 
 // API base URL for image URLs (can be configured via environment variable)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
@@ -304,14 +305,6 @@ export default function ProductsPage() {
     return nameMatch || categoryMatch
   })
 
-  // Format price for display
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('lo-LA', {
-      style: 'currency',
-      currency: 'LAK',
-      minimumFractionDigits: 0
-    }).format(price)
-  }
 
   if (loading) {
     return (

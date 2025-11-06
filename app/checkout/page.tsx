@@ -17,6 +17,7 @@ import { useCart } from "@/lib/cart-context"
 import { Truck, AlertCircle, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { formatPrice } from "@/lib/utils"
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -116,7 +117,7 @@ export default function CheckoutPage() {
                       <CardTitle>ຂໍ້ມູນຕິດຕໍ່</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="email">ອີເມວ</Label>
                         <Input
                           id="email"
@@ -138,7 +139,7 @@ export default function CheckoutPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="firstName">ຊື່</Label>
                           <Input
                             id="firstName"
@@ -147,7 +148,7 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="lastName">ນາມສະກຸນ</Label>
                           <Input
                             id="lastName"
@@ -157,7 +158,7 @@ export default function CheckoutPage() {
                           />
                         </div>
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="address">ທີ່ຢູ່</Label>
                         <Input
                           id="address"
@@ -167,7 +168,7 @@ export default function CheckoutPage() {
                         />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="city">ເມືອງ</Label>
                           <Input
                             id="city"
@@ -176,8 +177,8 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="state">ລັດ/ແຂວງ</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="state">ແຂວງ</Label>
                           <Select
                             value={formData.state}
                             onChange={(value) => handleInputChange("state", value.toString())}
@@ -187,12 +188,12 @@ export default function CheckoutPage() {
                               { value: "TX", label: "Texas" },
                               { value: "FL", label: "Florida" }
                             ]}
-                            placeholder="ເລືອກລັດ/ແຂວງ"
+                            placeholder="ເລືອກແຂວງ"
                           />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="zipCode">ລະຫັດໄປສະນີ</Label>
                           <Input
                             id="zipCode"
@@ -201,7 +202,7 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="country">ປະເທດ</Label>
                           <Select
                             value={formData.country}
@@ -285,15 +286,19 @@ export default function CheckoutPage() {
                     {items.map((item) => (
                       <div key={item.product.id} className="flex items-center space-x-3">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
+                          src={item.product.image || "/noimage.png"}
                           alt={item.product.name}
                           className="w-12 h-12 object-cover rounded"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/noimage.png"
+                          }}
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         </div>
-                        <p className="font-medium text-sm">${(item.product.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium text-sm">{formatPrice(item.product.price * item.quantity)}</p>
                       </div>
                     ))}
                   </div>
@@ -303,27 +308,27 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ລາຄາ</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>{formatPrice(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                      <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>{formatPrice(tax)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between font-semibold text-lg">
                       <span>ລວມທັງໝົດ</span>
-                      <span>${finalTotal.toFixed(2)}</span>
+                      <span>{formatPrice(finalTotal)}</span>
                     </div>
                   </div>
 
                   {total < 50 && currentStep === "shipping" && (
                     <div className="bg-accent/50 p-3 rounded-lg mt-6">
                       <p className="text-sm text-accent-foreground">
-                        Add ${(50 - total).toFixed(2)} more for free shipping!
+                        Add {formatPrice(50 - total)} more for free shipping!
                       </p>
                     </div>
                   )}

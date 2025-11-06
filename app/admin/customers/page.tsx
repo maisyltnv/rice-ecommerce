@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Search, User, Mail, Phone, MapPin, Calendar, Eye, Edit, Trash2 } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 
 // Mock customer data
 const mockCustomers = [
@@ -114,11 +115,7 @@ export default function AdminCustomersPage() {
     })
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("lo-LA", {
-            style: "currency",
-            currency: "LAK",
-            minimumFractionDigits: 0
-        }).format(amount)
+        return formatPrice(amount)
     }
 
     const formatDate = (dateString: string) => {

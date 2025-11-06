@@ -12,6 +12,7 @@ import { products } from "@/lib/data"
 import { useCart } from "@/lib/cart-context"
 import { Minus, Plus, ShoppingCart, Heart, Share2, Clock, MapPin, Check } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -72,9 +73,13 @@ export default function ProductDetailPage() {
             <div>
               <div className="mb-4">
                 <img
-                  src={product.images[selectedImage] || "/placeholder.svg"}
+                  src={product.images[selectedImage] || "/noimage.png"}
                   alt={product.name}
                   className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = "/noimage.png"
+                  }}
                 />
               </div>
               <div className="flex space-x-2 overflow-x-auto pb-2">
@@ -86,9 +91,13 @@ export default function ProductDetailPage() {
                       }`}
                   >
                     <img
-                      src={image || "/placeholder.svg"}
+                      src={image || "/noimage.png"}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = "/noimage.png"
+                      }}
                     />
                   </button>
                 ))}
@@ -103,9 +112,9 @@ export default function ProductDetailPage() {
 
               {/* Price */}
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-2xl sm:text-3xl font-bold text-foreground">${product.price}</span>
+                <span className="text-2xl sm:text-3xl font-bold text-foreground">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
-                  <span className="text-lg sm:text-xl text-muted-foreground line-through">${product.originalPrice}</span>
+                  <span className="text-lg sm:text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                 )}
               </div>
 
@@ -152,7 +161,7 @@ export default function ProductDetailPage() {
                   ) : (
                     <>
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      {product.inStock ? `ເພີ່ມໃສ່ກະຕ່າ - $${(product.price * quantity).toFixed(2)}` : "ສິນຄ້າໝົດ"}
+                      {product.inStock ? `ເພີ່ມໃສ່ກະຕ່າ - ${formatPrice(product.price * quantity)}` : "ສິນຄ້າໝົດ"}
                     </>
                   )}
                 </Button>
@@ -274,9 +283,13 @@ export default function ProductDetailPage() {
                       <Link href={`/products/${relatedProduct.id}`}>
                         <div className="relative overflow-hidden rounded-t-lg">
                           <img
-                            src={relatedProduct.image || "/placeholder.svg"}
+                            src={relatedProduct.image || "/noimage.png"}
                             alt={relatedProduct.name}
                             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = "/noimage.png"
+                            }}
                           />
                           {relatedProduct.badge && (
                             <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
@@ -292,7 +305,7 @@ export default function ProductDetailPage() {
                           </h3>
                         </Link>
                         <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-foreground">${relatedProduct.price}</span>
+                          <span className="text-lg font-bold text-foreground">{formatPrice(relatedProduct.price)}</span>
                           <Button size="sm">ເພີ່ມໃສ່ກະຕ່າ</Button>
                         </div>
                       </div>

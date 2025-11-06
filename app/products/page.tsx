@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select } from "@/components/ui/select"
 import { getAllProducts, type Product } from "@/lib/products-api"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 // API base URL for image URLs (can be configured via environment variable)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
@@ -86,9 +87,9 @@ export default function ProductsPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Page Header */}
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-4">ສູນລວມຂ້າວຊັ້ນດີ</h1>
+            <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-4">ສູນລວມເຂົ້າຊັ້ນດີ</h1>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-              ພວກເຮົາໄດ້ຄັດສັນຂ້າວຊັ້ນນໍາຢ່າງພິຖີພິຖັນ ທົ່ວປະເທດລາວ.
+              ພວກເຮົາໄດ້ຄັດສັນເຂົ້າຊັ້ນນໍາຢ່າງພິຖີພິຖັນ ທົ່ວປະເທດລາວ.
             </p>
           </div>
 
@@ -171,24 +172,24 @@ export default function ProductsPage() {
                         )}
                       </div>
                     </Link>
-                  <div className="p-6">
-                    <Link href={`/products/${product.id}`}>
-                      <h3 className="font-playfair text-xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    {product.description && (
-                      <p className="text-muted-foreground mb-2">{product.description}</p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xl font-bold text-foreground">${product.price}</span>
+                    <div className="p-6">
+                      <Link href={`/products/${product.id}`}>
+                        <h3 className="font-playfair text-xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
+                          {product.name}
+                        </h3>
+                      </Link>
+                      {product.description && (
+                        <p className="text-muted-foreground mb-2">{product.description}</p>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xl font-bold text-foreground">{formatPrice(product.price)}</span>
+                        </div>
+                        <AddToCartButton productId={product.id} product={product} size="sm" />
                       </div>
-                      <AddToCartButton productId={product.id} size="sm" />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
               )
             })}
           </div>

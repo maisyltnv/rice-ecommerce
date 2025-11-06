@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context"
 import { Package, Truck, CheckCircle, Clock } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { formatPrice } from "@/lib/utils"
 
 // Mock order data
 const mockOrders = [
@@ -121,7 +122,7 @@ export default function OrdersPage() {
                         <p className="text-muted-foreground">Placed on {formatDate(order.date)}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-foreground">${order.total.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-foreground">{formatPrice(order.total)}</p>
                         <p className="text-sm text-muted-foreground">{order.items.length} items</p>
                       </div>
                     </div>
@@ -137,7 +138,7 @@ export default function OrdersPage() {
                             <p className="font-medium">{item.name}</p>
                             <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                           </div>
-                          <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
                         </div>
                       ))}
                     </div>
