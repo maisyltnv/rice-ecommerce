@@ -11,6 +11,9 @@ import { Select } from "@/components/ui/select"
 import { getAllProducts, type Product } from "@/lib/products-api"
 import Link from "next/link"
 
+// API base URL for image URLs (can be configured via environment variable)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("name")
@@ -121,29 +124,53 @@ export default function ProductsPage() {
 
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedProducts.map((product) => (
-              <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-0">
-                  <Link href={`/products/${product.id}`}>
-                    <div className="relative overflow-hidden rounded-t-lg">
-                      <img
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name || "product"}
-                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      {/* API may not provide these fields; hide when not present */}
-                      {false && (
-                        <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
+            {sortedProducts.map((product) => {
+              // Construct image URL - handle both absolute and relative paths
+              const getImageUrl = (imagePath?: string) => {
+                if (!imagePath) return "/noimage.png"
+                if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                  return imagePath
+                }
+                // If it starts with /uploads, it's likely from the backend
+                if (imagePath.startsWith("/uploads")) {
+                  return `${API_BASE_URL}${imagePath}`
+                }
+                // If it starts with /, it's a relative path from public folder
+                if (imagePath.startsWith("/")) {
+                  return imagePath
+                }
+                // Otherwise, treat as relative path
+                return `/${imagePath}`
+              }
 
-                        </Badge>
-                      )}
-                      {false && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Badge variant="destructive">ສິນຄ້າໝົດ</Badge>
-                        </div>
-                      )}
-                    </div>
-                  </Link>
+              return (
+                <Card key={product.id} className="group hover:shadow-lg transition-shadow duration-300">
+                  <CardContent className="p-0">
+                    <Link href={`/products/${product.id}`}>
+                      <div className="relative overflow-hidden rounded-t-lg bg-gray-100">
+                        <img
+                          src={getImageUrl(product.image)}
+                          alt={product.name || "product"}
+                          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            // Fallback to noimage.png if image fails to load
+                            const target = e.target as HTMLImageElement
+                            target.src = "/noimage.png"
+                          }}
+                        />
+                        {/* API may not provide these fields; hide when not present */}
+                        {false && (
+                          <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
+
+                          </Badge>
+                        )}
+                        {false && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Badge variant="destructive">ສິນຄ້າໝົດ</Badge>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   <div className="p-6">
                     <Link href={`/products/${product.id}`}>
                       <h3 className="font-playfair text-xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
@@ -162,7 +189,8 @@ export default function ProductsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
 
           {sortedProducts.length === 0 && (

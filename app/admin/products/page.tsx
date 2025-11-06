@@ -24,6 +24,9 @@ import {
 import { useToast } from "@/components/ui/toast"
 import { Select } from "@/components/ui/select"
 
+// API base URL for image URLs (can be configured via environment variable)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+
 interface ProductFormData {
   name: string
   price: string
@@ -353,69 +356,103 @@ export default function ProductsPage() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
-          <Card key={product.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold line-clamp-1">
-                  {product.name || 'ບໍ່ມີຊື່'}
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(product)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(product.id, product.name || 'ສິນຄ້ານີ້')}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+        {filteredProducts.map((product) => {
+          // Construct image URL - handle both absolute and relative paths
+          const getImageUrl = (imagePath?: string) => {
+            if (!imagePath) return "/noimage.png"
+            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+              return imagePath
+            }
+            // If it starts with /uploads, it's likely from the backend
+            if (imagePath.startsWith("/uploads")) {
+              return `${API_BASE_URL}${imagePath}`
+            }
+            // If it starts with /, it's a relative path from public folder
+            if (imagePath.startsWith("/")) {
+              return imagePath
+            }
+            // Otherwise, treat as relative path
+            return `/${imagePath}`
+          }
+
+          return (
+            <Card key={product.id} className="hover:shadow-lg transition-shadow">
+              {/* Product Image */}
+              <div className="relative w-full h-48 overflow-hidden rounded-t-lg bg-gray-100">
+                <img
+                  src={getImageUrl(product.image)}
+                  alt={product.name || "Product image"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to noimage.png if image fails to load
+                    const target = e.target as HTMLImageElement
+                    target.src = "/noimage.png"
+                  }}
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">
-                    {typeof product.category === 'string' ? product.category :
-                      typeof product.category === 'object' ? product.category?.name || "ບໍ່ມີໝວດໝູ່" :
-                        "ບໍ່ມີໝວດໝູ່"}
-                    {product.category_id && (
-                      <span className="ml-1 text-xs text-gray-400">(ID: {product.category_id})</span>
-                    )}
-                  </span>
+
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold line-clamp-1">
+                    {product.name || 'ບໍ່ມີຊື່'}
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(product)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(product.id, product.name || 'ສິນຄ້ານີ້')}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-
-                <div className="text-2xl font-bold text-primary">
-                  {formatPrice(product.price || 0)}
-                </div>
-
-                {product.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-
-                {product.stock !== undefined && (
-                  <div className="text-sm">
-                    <span className="text-gray-600">ສະຕ໋ອກ:</span>
-                    <span className={`ml-2 font-medium ${product.stock > 10 ? 'text-green-600' :
-                      product.stock > 0 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
-                      {product.stock} ຊິ້ນ
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm text-gray-600">
+                      {typeof product.category === 'string' ? product.category :
+                        typeof product.category === 'object' ? product.category?.name || "ບໍ່ມີໝວດໝູ່" :
+                          "ບໍ່ມີໝວດໝູ່"}
+                      {product.category_id && (
+                        <span className="ml-1 text-xs text-gray-400">(ID: {product.category_id})</span>
+                      )}
                     </span>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                  <div className="text-2xl font-bold text-primary">
+                    {formatPrice(product.price || 0)}
+                  </div>
+
+                  {product.description && (
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {product.description}
+                    </p>
+                  )}
+
+                  {product.stock !== undefined && (
+                    <div className="text-sm">
+                      <span className="text-gray-600">ສະຕ໋ອກ:</span>
+                      <span className={`ml-2 font-medium ${product.stock > 10 ? 'text-green-600' :
+                        product.stock > 0 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                        {product.stock} ຊິ້ນ
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
       {/* Empty State */}
