@@ -12,12 +12,13 @@ import { Label } from "@/components/ui/label"
 import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { PaymentForm } from "@/components/payment-form"
 import { useCart } from "@/lib/cart-context"
-import { Truck, AlertCircle, CheckCircle } from "lucide-react"
+import { Truck, AlertCircle, CheckCircle, Lock, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatPrice } from "@/lib/utils"
+import Image from "next/image"
+import type { Order } from "@/lib/admin-data"
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -25,6 +26,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState<"shipping" | "payment" | "processing">("shipping")
   const [paymentError, setPaymentError] = useState("")
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const [formData, setFormData] = useState({
     email: "",
@@ -65,19 +67,53 @@ export default function CheckoutPage() {
     setCurrentStep("payment")
   }
 
-  const handlePaymentSuccess = (paymentIntentId: string) => {
-    setPaymentSuccess(true)
-    setCurrentStep("processing")
+  const handleSaveOrder = async () => {
+    setIsSaving(true)
+    setPaymentError("")
 
-    // Simulate order processing
-    setTimeout(() => {
-      clearCart()
-      router.push(`/checkout/success?payment_intent=${paymentIntentId}`)
-    }, 2000)
-  }
+    try {
+      // Generate order ID
+      const orderId = `ORD-${Date.now()}`
 
-  const handlePaymentError = (error: string) => {
-    setPaymentError(error)
+      // Create order object
+      const order: Order = {
+        id: orderId,
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        items: items.map(item => ({
+          product: item.product,
+          quantity: item.quantity,
+        })),
+        total: finalTotal,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        shippingAddress: {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+        },
+      }
+
+      // Save order to localStorage (or you can create an API route)
+      const savedOrders = JSON.parse(localStorage.getItem("rice-orders") || "[]")
+      savedOrders.push(order)
+      localStorage.setItem("rice-orders", JSON.stringify(savedOrders))
+
+      setPaymentSuccess(true)
+      setCurrentStep("processing")
+
+      // Simulate order processing
+      setTimeout(() => {
+        clearCart()
+        router.push(`/checkout/success?order_id=${orderId}`)
+      }, 2000)
+    } catch (error) {
+      setPaymentError("Failed to save order. Please try again.")
+      console.error("Error saving order:", error)
+      setIsSaving(false)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -248,7 +284,52 @@ export default function CheckoutPage() {
                     </Alert>
                   )}
 
-                  <PaymentForm amount={finalTotal} onSuccess={handlePaymentSuccess} onError={handlePaymentError} />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Lock className="h-5 w-5" />
+                        <span>Payment Information</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex justify-center">
+                        <div className="relative w-full max-w-md">
+                          <Image
+                            src="/myQr.jpeg"
+                            alt="QR Code for Payment"
+                            width={400}
+                            height={400}
+                            className="w-full h-auto rounded-lg"
+                            priority
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="w-full"
+                        onClick={handleSaveOrder}
+                        disabled={isSaving || paymentSuccess}
+                      >
+                        {isSaving || paymentSuccess ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="mr-2 h-4 w-4" />
+                            Pay {formatPrice(finalTotal)}
+                          </>
+                        )}
+                      </Button>
+
+                      <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
+                        <Lock className="h-3 w-3" />
+                        <span>Your payment information is secure and encrypted</span>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   <Button variant="outline" onClick={() => setCurrentStep("shipping")} className="w-full" type="button">
                     ກັບໄປໜ້າຈັດສົ່ງ
