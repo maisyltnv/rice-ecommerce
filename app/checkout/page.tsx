@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation"
 import { formatPrice } from "@/lib/utils"
 import Image from "next/image"
 import type { Order } from "@/lib/admin-data"
+import { createOrderAPI, type OrderItemPayload } from "@/lib/api"
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -72,43 +73,26 @@ export default function CheckoutPage() {
     setPaymentError("")
 
     try {
-      // Generate order ID
-      const orderId = `ORD-${Date.now()}`
+      const orderItems: OrderItemPayload[] = items.map(i => ({
+        product_id: i.product.id,
+        quantity: i.quantity,
+      }))
 
-      // Create order object
-      const order: Order = {
-        id: orderId,
-        customerName: `${formData.firstName} ${formData.lastName}`,
-        customerEmail: formData.email,
-        items: items.map(item => ({
-          product: item.product,
-          quantity: item.quantity,
-        })),
-        total: finalTotal,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        shippingAddress: {
-          street: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          country: formData.country,
-        },
+      const createRes = await createOrderAPI(orderItems)
+      if (!createRes.success || !createRes.order) {
+        throw new Error(createRes.error || 'Create order failed')
       }
 
-      // Save order to localStorage (or you can create an API route)
-      const savedOrders = JSON.parse(localStorage.getItem("rice-orders") || "[]")
-      savedOrders.push(order)
-      localStorage.setItem("rice-orders", JSON.stringify(savedOrders))
+      const created = createRes.order
+      const orderId = created.id?.toString() || `ORD-${Date.now()}`
 
       setPaymentSuccess(true)
       setCurrentStep("processing")
 
-      // Simulate order processing
       setTimeout(() => {
         clearCart()
         router.push(`/checkout/success?order_id=${orderId}`)
-      }, 2000)
+      }, 1200)
     } catch (error) {
       setPaymentError("Failed to save order. Please try again.")
       console.error("Error saving order:", error)

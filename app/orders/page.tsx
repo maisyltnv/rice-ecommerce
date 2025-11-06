@@ -20,6 +20,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { formatPrice } from "@/lib/utils"
 import type { Order } from "@/lib/admin-data"
+import { fetchOrdersAPI, type BackendOrder } from "@/lib/api"
 
 interface DisplayOrder {
   id: string
@@ -42,24 +43,32 @@ export default function OrdersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Load orders from localStorage
-      const savedOrders: Order[] = JSON.parse(localStorage.getItem("rice-orders") || "[]")
-      // Convert Order format to display format
-      const formattedOrders: DisplayOrder[] = savedOrders.map((order) => ({
-        id: order.id.replace("ORD-", "RC"),
-        date: order.createdAt,
-        status: order.status,
-        total: order.total,
-        fullOrder: order, // Store full order for details
-        items: order.items.map((item) => ({
-          name: item.product.name,
-          quantity: item.quantity,
-          price: item.product.price,
-        })),
-      }))
-      setOrders(formattedOrders)
+    const load = async () => {
+      const resp = await fetchOrdersAPI()
+      if (!resp.success || !resp.orders) {
+        setOrders([])
+        return
+      }
+
+      const formatted: DisplayOrder[] = resp.orders.map((o: BackendOrder) => {
+        const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
+        const items = (o.items || []).map((it) => ({
+          name: it.product?.name || `Product #${it.product_id ?? ''}`,
+          quantity: it.quantity,
+          price: it.product?.price ?? it.price ?? 0,
+        }))
+        const total = o.total ?? items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+        return {
+          id: String(o.id).replace("ORD-", "RC"),
+          date: created,
+          status: o.status || "pending",
+          total,
+          items,
+        }
+      })
+      setOrders(formatted)
     }
+    load()
   }, [])
 
   if (!isAuthenticated) {

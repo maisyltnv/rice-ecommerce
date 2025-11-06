@@ -222,3 +222,111 @@ export async function logoutAPI(): Promise<{ success: boolean }> {
         return { success: true } // Always succeed logout locally
     }
 }
+
+// Orders
+
+export interface OrderItemPayload {
+    product_id: number
+    quantity: number
+}
+
+export interface CreateOrderResponse {
+    success: boolean
+    order?: any
+    error?: string
+}
+
+export async function createOrderAPI(items: OrderItemPayload[], customerId?: number): Promise<CreateOrderResponse> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const body: any = { items }
+        if (customerId) body.customer_id = customerId
+
+        const res = await fetch(`${API_BASE_URL}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(body),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        return { success: true, order: responseData }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function updateOrderStatusAPI(orderId: number | string, status: string): Promise<CreateOrderResponse> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const res = await fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ status }),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        return { success: true, order: responseData }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export interface BackendOrderItem {
+    product_id?: number
+    quantity: number
+    product?: { id: number; name: string; price: number; image?: string }
+    price?: number
+}
+
+export interface BackendOrder {
+    id: number | string
+    status: string
+    total?: number
+    created_at?: string
+    createdAt?: string
+    items: BackendOrderItem[]
+}
+
+export async function fetchOrdersAPI(): Promise<{ success: boolean; orders?: BackendOrder[]; error?: string }> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const res = await fetch(`${API_BASE_URL}/orders`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        return { success: true, orders: responseData }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
