@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select"
 import { getAllProducts, type Product } from "@/lib/products-api"
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 
 // API base URL for image URLs (can be configured via environment variable)
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
@@ -94,38 +95,49 @@ export default function ProductsPage() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <div className="flex-1">
-              <div className="flex flex-wrap gap-2">
-                {categoryOptions.map((category) => (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedCategory(category.id)}
-                  >
-                    {category.name} ({category.count})
-                  </Button>
-                ))}
+          {!loading && (
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex-1">
+                <div className="flex flex-wrap gap-2">
+                  {categoryOptions.map((category) => (
+                    <Button
+                      key={category.id}
+                      variant={selectedCategory === category.id ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedCategory(category.id)}
+                    >
+                      {category.name} ({category.count})
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <div className="w-full sm:w-48">
+                <Select
+                  value={sortBy}
+                  onChange={(value) => setSortBy(value.toString())}
+                  options={[
+                    { value: "name", label: "ຊື່ A-Z" },
+                    { value: "price-low", label: "ລາຄາ: ຕ່ຳ → ສູງ" },
+                    { value: "price-high", label: "ລາຄາ: ສູງ → ຕ່ຳ" }
+                  ]}
+                  placeholder="ຈັດຮຽງຕາມ"
+                />
               </div>
             </div>
-            <div className="w-full sm:w-48">
-              <Select
-                value={sortBy}
-                onChange={(value) => setSortBy(value.toString())}
-                options={[
-                  { value: "name", label: "ຊື່ A-Z" },
-                  { value: "price-low", label: "ລາຄາ: ຕ່ຳ → ສູງ" },
-                  { value: "price-high", label: "ລາຄາ: ສູງ → ຕ່ຳ" }
-                ]}
-                placeholder="ຈັດຮຽງຕາມ"
-              />
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+              <p className="text-lg text-muted-foreground">ກຳລັງໂຫຼດສິນຄ້າ...</p>
             </div>
-          </div>
+          )}
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {sortedProducts.map((product) => {
+          {!loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {sortedProducts.map((product) => {
               // Construct image URL - handle both absolute and relative paths
               const getImageUrl = (imagePath?: string) => {
                 if (!imagePath) return "/noimage.png"
@@ -192,9 +204,10 @@ export default function ProductsPage() {
                 </Card>
               )
             })}
-          </div>
+            </div>
+          )}
 
-          {sortedProducts.length === 0 && (
+          {!loading && sortedProducts.length === 0 && (
             <div className="text-center py-12">
               <p className="text-lg text-muted-foreground">ບໍ່ພົບສິນຄ້າໃນປະເພດນີ້.</p>
             </div>

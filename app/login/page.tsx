@@ -12,11 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { loginAPI, type LoginRequest } from "@/lib/api"
+import { clientLoginAPI, type CustomerLoginRequest } from "@/lib/api"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
@@ -30,14 +30,14 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const credentials: LoginRequest = {
-        username: username,
+      const credentials: CustomerLoginRequest = {
+        email: email,
         password: password
       }
 
-      console.log('Login: Attempting login with credentials:', credentials)
-      const result = await loginAPI(credentials)
-      console.log('Login: Login result:', result)
+      console.log('Login: Attempting client login with credentials:', credentials)
+      const result = await clientLoginAPI(credentials)
+      console.log('Login: Client login result:', result)
 
       if (result.success && result.user && result.token) {
         console.log('Login: Login successful, storing user data:', result.user)
@@ -45,7 +45,7 @@ export default function LoginPage() {
         // Store user data in localStorage
         localStorage.setItem("rice-user", JSON.stringify({
           id: result.user.id,
-          email: result.user.email || username + "@example.com",
+          email: result.user.email || email,
           name: result.user.username,
           role: result.user.role || 'user',
           token: result.token
@@ -86,15 +86,15 @@ export default function LoginPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="username">ຊື່ຜູ້ໃຊ້ງານ</Label>
+                  <Label htmlFor="email">ອີເມວ</Label>
                   <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="ປ້ອນຊື່ຜູ້ໃຊ້ງານ"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="ປ້ອນອີເມວ"
                     required
-                    autoComplete="username"
+                    autoComplete="email"
                   />
                 </div>
 
@@ -149,10 +149,10 @@ export default function LoginPage() {
                 <p className="text-sm text-muted-foreground mb-2">🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:</p>
                 <div className="text-xs space-y-1">
                   <p>
-                    <strong>ຊື່ຜູ້ໃຊ້:</strong> testuser3
+                    <strong>ອີເມວ:</strong> john@example.com
                   </p>
                   <p>
-                    <strong>ລະຫັດຜ່ານ:</strong> 123456
+                    <strong>ລະຫັດຜ່ານ:</strong> password123
                   </p>
                 </div>
                 <div className="mt-4 text-center">
