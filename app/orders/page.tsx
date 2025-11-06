@@ -52,12 +52,15 @@ export default function OrdersPage() {
 
       const formatted: DisplayOrder[] = resp.orders.map((o: BackendOrder) => {
         const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
-        const items = (o.items || []).map((it) => ({
-          name: it.product?.name || `Product #${it.product_id ?? ''}`,
-          quantity: it.quantity,
-          price: it.product?.price ?? it.price ?? 0,
+        const rawItems = (o as any).items || (o as any).order_items || []
+        const items = rawItems.map((it: any) => ({
+          name: it.product?.name || it.product_name || `Product #${it.product_id ?? ''}`,
+          quantity: it.quantity ?? it.qty ?? 0,
+          price: it.product?.price ?? it.price ?? it.unit_price ?? 0,
         }))
-        const total = o.total ?? items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+        const orderTotal = (o as any).total ?? (o as any).total_price ?? (o as any).amount ?? (o as any).grand_total ?? (o as any).totalAmount
+        const computed = items.reduce((sum: number, i: any) => sum + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0)
+        const total = Number(orderTotal ?? computed) || 0
         return {
           id: String(o.id).replace("ORD-", "RC"),
           date: created,
@@ -126,10 +129,7 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (order: DisplayOrder) => {
-    if (order.fullOrder) {
-      setSelectedOrder(order.fullOrder)
-      setIsDialogOpen(true)
-    }
+    router.push(`/orders/${order.id.replace('RC', '')}`)
   }
 
   return (
