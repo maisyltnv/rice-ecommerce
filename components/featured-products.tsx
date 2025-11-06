@@ -38,7 +38,7 @@ export function FeaturedProducts() {
         <div className="text-center mb-12">
           <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-foreground mb-4">ສິນຄ້າແນະນຳ</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            ຄັດສັນຢ່າງຕັ້ງໃຈຈາກຄັງຂ້າວຊັ້ນດີ ແຕ່ລະຊະນິດໂດດເດັ່ນດ້ວຍຄຸນນະພາບ ແລະອັກລັກສະນະພິເສດ.
+            ຄັດສັນຢ່າງຕັ້ງໃຈຈາກຄັງເຂົ້າຊັ້ນດີ ແຕ່ລະຊະນິດໂດດເດັ່ນດ້ວຍຄຸນນະພາບ.
           </p>
         </div>
 

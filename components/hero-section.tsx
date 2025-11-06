@@ -15,15 +15,15 @@ export function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 text-balance">
-            ຂ້າວມໍລະດົກຊັ້ນດີ ພ້ອມຄຸນນະພາບທັນສະໄໝ
+            ເຂົ້າຄຸນນະພາບດີ
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
-            ຄົ້ນພົບຄັງຂ້າວຊັ້ນດີທີ່ຄັດເລືອກຢ່າງປະນີດ ມາຈາກຟາມມໍລະດົກ ແລະສົ່ງສົດເຖິງໂຕະອາຫານຂອງທ່ານ.
+            ເຂົ້າຫອມ ອ່ອນນຸ່ມ ພ້ອມດ້ວຍໂພສະນາການ
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/products">
               <Button size="lg" className="text-base">
-                ຊື້ຂ້າວຊັ້ນດີ
+                ຊື້ເຂົ້າ
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
