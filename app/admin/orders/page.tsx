@@ -7,14 +7,23 @@ import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 import type { Order } from "@/lib/admin-data"
 import { fetchOrdersAPI, updateOrderStatusAPI, type BackendOrder } from "@/lib/api"
-import { Search, Eye, Package, Truck } from "lucide-react"
+import { Search, Eye, Package, Truck, User, Mail, MapPin, Calendar } from "lucide-react"
 
 export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,36 +60,67 @@ export default function AdminOrdersPage() {
         // Transform backend orders to admin Order format
         const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => {
           const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
-          const rawItems = (o as any).items || []
           
-          // Extract customer info from order if available
+          // Try multiple ways to get items (items, order_items, orderItems)
+          const rawItems = (o as any).items || 
+                          (o as any).order_items || 
+                          (o as any).orderItems || 
+                          []
+          
+          // Extract customer info from order if available - try multiple formats
           const customerName = (o as any).customer?.name || 
+                              (o as any).customer?.full_name ||
                               (o as any).customer_name || 
-                              (o as any).customerName || 
+                              (o as any).customerName ||
+                              (o as any).customer?.username ||
                               "Customer"
           const customerEmail = (o as any).customer?.email || 
                                (o as any).customer_email || 
-                               (o as any).customerEmail || 
+                               (o as any).customerEmail ||
+                               (o as any).customer?.email_address ||
                                "customer@example.com"
           
-          // Extract shipping address if available
-          const shippingAddress = (o as any).shipping_address || (o as any).shippingAddress || {
-            street: (o as any).address?.street || "N/A",
-            city: (o as any).address?.city || (o as any).city || "N/A",
-            state: (o as any).address?.state || (o as any).state || "N/A",
-            zipCode: (o as any).address?.zip_code || (o as any).zip_code || (o as any).zipCode || "N/A",
-            country: (o as any).address?.country || (o as any).country || "N/A"
+          // Extract shipping address if available - try multiple formats
+          const shippingAddress = (o as any).shipping_address || 
+                                 (o as any).shippingAddress || 
+                                 (o as any).shipping ||
+                                 (o as any).address || {
+            street: (o as any).street || (o as any).address_line1 || "N/A",
+            city: (o as any).city || "N/A",
+            state: (o as any).state || (o as any).province || "N/A",
+            zipCode: (o as any).zip_code || (o as any).zipCode || (o as any).postal_code || "N/A",
+            country: (o as any).country || "N/A"
           }
 
-          const items = rawItems.map((it: any) => ({
-            product: {
-              id: it.product?.id || it.product_id || 0,
-              name: it.product?.name || it.product_name || `Product #${it.product_id ?? ''}`,
-              price: it.product?.price ?? it.price ?? it.unit_price ?? 0,
-              image: it.product?.image || it.product_image || undefined,
-            },
-            quantity: it.quantity ?? it.qty ?? 0,
-          }))
+          // Map items with better error handling
+          const items = rawItems.map((it: any) => {
+            // Try to get product info from various formats
+            const productId = it.product?.id || it.product_id || 0
+            const productName = it.product?.name || 
+                              it.product_name || 
+                              it.name ||
+                              `Product #${productId}`
+            const productPrice = it.product?.price ?? 
+                               it.price ?? 
+                               it.unit_price ?? 
+                               it.product?.unit_price ??
+                               0
+            const productImage = it.product?.image || 
+                               it.product_image || 
+                               it.image ||
+                               it.product?.image_url ||
+                               undefined
+
+            return {
+              product: {
+                id: productId,
+                name: productName,
+                price: Number(productPrice) || 0,
+                image: productImage,
+              },
+              quantity: Number(it.quantity ?? it.qty ?? 0) || 0,
+            }
+          }).filter(item => item.quantity > 0) // Filter out items with 0 quantity
 
           const orderTotal = (o as any).total ?? 
                             (o as any).total_price ?? 
@@ -100,10 +140,10 @@ export default function AdminOrdersPage() {
             status: (o.status || "pending") as Order["status"],
             createdAt: created,
             shippingAddress: {
-              street: shippingAddress.street || "N/A",
+              street: shippingAddress.street || shippingAddress.address_line1 || shippingAddress.address || "N/A",
               city: shippingAddress.city || "N/A",
-              state: shippingAddress.state || "N/A",
-              zipCode: shippingAddress.zipCode || shippingAddress.zip_code || "N/A",
+              state: shippingAddress.state || shippingAddress.province || "N/A",
+              zipCode: shippingAddress.zipCode || shippingAddress.zip_code || shippingAddress.postal_code || "N/A",
               country: shippingAddress.country || "N/A",
             },
           }
@@ -291,10 +331,13 @@ export default function AdminOrdersPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}
+                    onClick={() => {
+                      setSelectedOrder(order)
+                      setIsDialogOpen(true)
+                    }}
                   >
                     <Eye className="mr-2 h-4 w-4" />
-                    {selectedOrder === order.id ? "Hide" : "View"} Details
+                    View Details
                   </Button>
                   {order.status === "pending" && (
                     <Button size="sm" onClick={() => updateOrderStatus(order.id, "processing")}>
@@ -310,39 +353,6 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
               </div>
-
-              {/* Order Details */}
-              {selectedOrder === order.id && (
-                <div className="mt-6 pt-6 border-t border-border">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold mb-3">Order Items</h4>
-                      <div className="space-y-2">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                            <div>
-                              <p className="font-medium">{item.product.name}</p>
-                              <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                            </div>
-                            <p className="font-medium">{formatCurrency(item.product.price * item.quantity)}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-3">Shipping Address</h4>
-                      <div className="text-sm space-y-1">
-                        <p>{order.customerName}</p>
-                        <p>{order.shippingAddress.street}</p>
-                        <p>
-                          {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
-                        </p>
-                        <p>{order.shippingAddress.country}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
           ))}
@@ -358,6 +368,187 @@ export default function AdminOrdersPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Order Details Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedOrder && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center justify-between mb-2">
+                  <DialogTitle className="text-2xl">Order Details - {selectedOrder.id}</DialogTitle>
+                  <Badge className={getStatusColor(selectedOrder.status)}>
+                    {selectedOrder.status}
+                  </Badge>
+                </div>
+                <DialogDescription className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Ordered on {formatDate(selectedOrder.createdAt)}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6 mt-4">
+                {/* Customer Information */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3 flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Customer Information
+                  </h3>
+                  <div className="space-y-2 text-sm bg-muted p-4 rounded-lg">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span className="font-medium">{selectedOrder.customerName}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <span>{selectedOrder.customerEmail}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Shipping Address */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3 flex items-center">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Shipping Address
+                  </h3>
+                  <div className="text-sm space-y-1 bg-muted p-4 rounded-lg">
+                    {selectedOrder.shippingAddress.street !== "N/A" ? (
+                      <>
+                        <p className="font-medium">{selectedOrder.customerName}</p>
+                        <p>{selectedOrder.shippingAddress.street}</p>
+                        <p>
+                          {selectedOrder.shippingAddress.city !== "N/A" && selectedOrder.shippingAddress.city}
+                          {selectedOrder.shippingAddress.city !== "N/A" && selectedOrder.shippingAddress.state !== "N/A" && ", "}
+                          {selectedOrder.shippingAddress.state !== "N/A" && selectedOrder.shippingAddress.state}
+                          {selectedOrder.shippingAddress.zipCode !== "N/A" && ` ${selectedOrder.shippingAddress.zipCode}`}
+                        </p>
+                        {selectedOrder.shippingAddress.country !== "N/A" && (
+                          <p>{selectedOrder.shippingAddress.country}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-muted-foreground italic">Shipping address not provided</p>
+                    )}
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Order Items */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Order Items ({selectedOrder.items.length})</h3>
+                  {selectedOrder.items.length === 0 ? (
+                    <div className="bg-muted p-6 rounded-lg text-center border border-border">
+                      <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No items found in this order</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedOrder.items.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-start p-4 bg-muted rounded-lg border border-border"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-start gap-3">
+                              {item.product.image && (
+                                <img 
+                                  src={item.product.image} 
+                                  alt={item.product.name}
+                                  className="w-16 h-16 object-cover rounded border border-border"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="font-medium text-base">{item.product.name}</p>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  Product ID: {item.product.id}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Quantity: {item.quantity} × {formatCurrency(item.product.price)} = {formatCurrency(item.product.price * item.quantity)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="font-semibold text-base ml-4">
+                            {formatCurrency(item.product.price * item.quantity)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Order Summary */}
+                <div>
+                  <h3 className="font-semibold text-foreground mb-3">Order Summary</h3>
+                  <div className="space-y-2 bg-muted p-4 rounded-lg">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Items: {selectedOrder.items.length} {selectedOrder.items.length === 1 ? 'item' : 'items'}
+                      </span>
+                      <span className="font-medium">
+                        {formatCurrency(selectedOrder.items.reduce((sum, item) => 
+                          sum + (item.product.price * item.quantity), 0
+                        ))}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total Amount:</span>
+                      <span>{formatCurrency(selectedOrder.total)}</span>
+                    </div>
+                    {selectedOrder.items.length > 0 && selectedOrder.total === 0 && (
+                      <p className="text-xs text-muted-foreground mt-2 italic">
+                        Note: Total is calculated as 0. Please verify order items.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                  {selectedOrder.status === "pending" && (
+                    <Button 
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, "processing")
+                        setIsDialogOpen(false)
+                      }}
+                      className="flex-1"
+                    >
+                      <Package className="mr-2 h-4 w-4" />
+                      Mark as Processing
+                    </Button>
+                  )}
+                  {selectedOrder.status === "processing" && (
+                    <Button 
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder.id, "shipped")
+                        setIsDialogOpen(false)
+                      }}
+                      className="flex-1"
+                    >
+                      <Truck className="mr-2 h-4 w-4" />
+                      Mark as Shipped
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsDialogOpen(false)}
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
