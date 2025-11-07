@@ -177,12 +177,12 @@ export default function OrdersPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 mb-6">
+                  <CardContent className="pt-0">
+                    <div className="space-y-0.5 mb-1">
                       {order.items.map((item, index) => (
                         <div
                           key={index}
-                          className="flex justify-between items-center py-2 border-b border-border last:border-0"
+                          className="flex justify-between items-center py-1 border-b border-border last:border-0"
                         >
                           <div>
                             <p className="font-medium">{item.name}</p>
@@ -192,7 +192,7 @@ export default function OrdersPage() {
                         </div>
                       ))}
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-2">
                       <Button variant="outline" size="sm">
                         <Package className="mr-2 h-4 w-4" />
                         ຕິດຕາມການຈັດສົ່ງ

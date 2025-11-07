@@ -95,19 +95,19 @@ export default function OrderDetailPage() {
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-3 pt-0">
                 <div className="text-sm text-muted-foreground">ສັ່ງເມື່ອ {new Date(order.date).toLocaleString()}</div>
 
                 <Separator />
 
                 <div>
-                  <h3 className="font-semibold mb-3">ລາຍການສິນຄ້າ</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold mb-1">ລາຍການສິນຄ້າ</h3>
+                  <div className="space-y-0.5">
                     {order.items.length === 0 ? (
                       <p className="text-sm text-muted-foreground">No items on this order.</p>
                     ) : (
                       order.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-2 border-b last:border-0">
+                        <div key={idx} className="flex justify-between items-center py-1 border-b last:border-0">
                           <div>
                             <p className="font-medium">{item.name}</p>
                             <p className="text-xs text-muted-foreground">ຈຳນວນ: {item.quantity}</p>

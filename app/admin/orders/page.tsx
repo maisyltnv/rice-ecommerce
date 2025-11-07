@@ -1,21 +1,127 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
-import { mockOrders } from "@/lib/admin-data"
+import type { Order } from "@/lib/admin-data"
+import { fetchOrdersAPI, updateOrderStatusAPI, type BackendOrder } from "@/lib/api"
 import { Search, Eye, Package, Truck } from "lucide-react"
 
 export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const filteredOrders = mockOrders.filter((order) => {
+  useEffect(() => {
+    const loadOrders = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const resp = await fetchOrdersAPI()
+        if (!resp.success) {
+          setError(resp.error || "Failed to load orders")
+          setOrders([])
+          setLoading(false)
+          return
+        }
+
+        // Handle different response formats
+        let ordersData = resp.orders
+        if (!ordersData && (resp as any).data) {
+          // If orders is not directly available, check data property
+          ordersData = Array.isArray((resp as any).data) 
+            ? (resp as any).data 
+            : (resp as any).data?.orders
+        }
+
+        if (!ordersData || !Array.isArray(ordersData)) {
+          setError("Invalid orders data format")
+          setOrders([])
+          setLoading(false)
+          return
+        }
+
+        // Transform backend orders to admin Order format
+        const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => {
+          const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
+          const rawItems = (o as any).items || []
+          
+          // Extract customer info from order if available
+          const customerName = (o as any).customer?.name || 
+                              (o as any).customer_name || 
+                              (o as any).customerName || 
+                              "Customer"
+          const customerEmail = (o as any).customer?.email || 
+                               (o as any).customer_email || 
+                               (o as any).customerEmail || 
+                               "customer@example.com"
+          
+          // Extract shipping address if available
+          const shippingAddress = (o as any).shipping_address || (o as any).shippingAddress || {
+            street: (o as any).address?.street || "N/A",
+            city: (o as any).address?.city || (o as any).city || "N/A",
+            state: (o as any).address?.state || (o as any).state || "N/A",
+            zipCode: (o as any).address?.zip_code || (o as any).zip_code || (o as any).zipCode || "N/A",
+            country: (o as any).address?.country || (o as any).country || "N/A"
+          }
+
+          const items = rawItems.map((it: any) => ({
+            product: {
+              id: it.product?.id || it.product_id || 0,
+              name: it.product?.name || it.product_name || `Product #${it.product_id ?? ''}`,
+              price: it.product?.price ?? it.price ?? it.unit_price ?? 0,
+              image: it.product?.image || it.product_image || undefined,
+            },
+            quantity: it.quantity ?? it.qty ?? 0,
+          }))
+
+          const orderTotal = (o as any).total ?? 
+                            (o as any).total_price ?? 
+                            (o as any).amount ?? 
+                            (o as any).grand_total ?? 
+                            (o as any).totalAmount
+          const computed = items.reduce((sum: number, i: any) => 
+            sum + (Number(i.product.price) || 0) * (Number(i.quantity) || 0), 0)
+          const total = Number(orderTotal ?? computed) || 0
+
+          return {
+            id: String(o.id).startsWith("ORD-") ? String(o.id) : `ORD-${o.id}`,
+            customerName,
+            customerEmail,
+            items,
+            total,
+            status: (o.status || "pending") as Order["status"],
+            createdAt: created,
+            shippingAddress: {
+              street: shippingAddress.street || "N/A",
+              city: shippingAddress.city || "N/A",
+              state: shippingAddress.state || "N/A",
+              zipCode: shippingAddress.zipCode || shippingAddress.zip_code || "N/A",
+              country: shippingAddress.country || "N/A",
+            },
+          }
+        })
+
+        setOrders(transformedOrders)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load orders")
+        setOrders([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadOrders()
+  }, [])
+
+  const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,9 +163,29 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const updateOrderStatus = (orderId: string, newStatus: string) => {
-    // In a real app, this would make an API call
-    console.log(`Updating order ${orderId} to status: ${newStatus}`)
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      // Remove "ORD-" prefix if present for API call
+      const orderIdNum = orderId.replace("ORD-", "")
+      const resp = await updateOrderStatusAPI(orderIdNum, newStatus)
+      
+      if (resp.success) {
+        // Update the order in local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId 
+              ? { ...order, status: newStatus as Order["status"] }
+              : order
+          )
+        )
+      } else {
+        console.error("Failed to update order status:", resp.error)
+        alert(`Failed to update order status: ${resp.error}`)
+      }
+    } catch (err) {
+      console.error("Error updating order status:", err)
+      alert(`Error updating order status: ${err instanceof Error ? err.message : "Unknown error"}`)
+    }
   }
 
   return (
@@ -103,9 +229,31 @@ export default function AdminOrdersPage() {
         </CardContent>
       </Card>
 
+      {/* Loading State */}
+      {loading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <p className="text-muted-foreground">Loading orders...</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Package className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="font-semibold text-lg mb-2 text-red-500">Error loading orders</h3>
+            <p className="text-muted-foreground">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Orders List */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredOrders.map((order) => (
+      {!loading && !error && (
+        <div className="grid grid-cols-1 gap-4">
+          {filteredOrders.map((order) => (
           <Card key={order.id}>
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -197,10 +345,11 @@ export default function AdminOrdersPage() {
               )}
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {filteredOrders.length === 0 && (
+      {!loading && !error && filteredOrders.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
