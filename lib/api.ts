@@ -230,16 +230,53 @@ export interface OrderItemPayload {
     quantity: number
 }
 
+export interface CustomerInfo {
+    email: string
+    firstName?: string
+    lastName?: string
+}
+
+export interface ShippingAddress {
+    street: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+}
+
 export interface CreateOrderResponse {
     success: boolean
     order?: any
     error?: string
 }
 
-export async function createOrderAPI(items: OrderItemPayload[], customerId?: number): Promise<CreateOrderResponse> {
+export async function createOrderAPI(
+    items: OrderItemPayload[], 
+    customerInfo?: CustomerInfo,
+    shippingAddress?: ShippingAddress,
+    customerId?: number
+): Promise<CreateOrderResponse> {
     try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
         const body: any = { items }
+        
+        if (customerInfo) {
+            body.email = customerInfo.email
+            if (customerInfo.firstName) body.first_name = customerInfo.firstName
+            if (customerInfo.lastName) body.last_name = customerInfo.lastName
+            body.customer_name = `${customerInfo.firstName || ''} ${customerInfo.lastName || ''}`.trim()
+        }
+        
+        if (shippingAddress) {
+            body.shipping_address = {
+                street: shippingAddress.street,
+                city: shippingAddress.city,
+                state: shippingAddress.state,
+                zip_code: shippingAddress.zipCode,
+                country: shippingAddress.country,
+            }
+        }
+        
         if (customerId) body.customer_id = customerId
 
         const res = await fetch(`${API_BASE_URL}/orders`, {
@@ -254,7 +291,14 @@ export async function createOrderAPI(items: OrderItemPayload[], customerId?: num
 
         if (!res.ok) {
             const err = await res.json().catch(() => ({}))
-            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+            const errorMessage = err.error || err.message || err.detail || `HTTP ${res.status}: ${res.statusText}`
+            console.error('Order creation failed:', {
+                status: res.status,
+                statusText: res.statusText,
+                error: err,
+                body: body
+            })
+            return { success: false, error: errorMessage }
         }
 
         const data = await res.json()

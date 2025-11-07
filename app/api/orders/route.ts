@@ -7,6 +7,8 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const authHeader = request.headers.get('authorization') || ''
 
+        console.log('Creating order with body:', JSON.stringify(body, null, 2))
+
         const response = await fetch(`${CLIENT_API_BASE_URL}/orders`, {
             method: 'POST',
             headers: {
@@ -26,11 +28,18 @@ export async function POST(request: NextRequest) {
         }
 
         if (!response.ok) {
-            return NextResponse.json({ success: false, error: data.message || response.statusText }, { status: response.status })
+            console.error('Order creation failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: data
+            })
+            const errorMessage = data.error || data.message || data.detail || response.statusText || 'Bad Request'
+            return NextResponse.json({ success: false, error: errorMessage }, { status: response.status })
         }
 
         return NextResponse.json({ success: true, data })
     } catch (error) {
+        console.error('Order creation error:', error)
         return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
     }
 }

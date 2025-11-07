@@ -73,12 +73,34 @@ export default function CheckoutPage() {
     setPaymentError("")
 
     try {
+      // Validate required fields
+      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address || 
+          !formData.city || !formData.state || !formData.zipCode || !formData.country) {
+        setPaymentError("Please fill in all required shipping information.")
+        setIsSaving(false)
+        return
+      }
+
       const orderItems: OrderItemPayload[] = items.map(i => ({
         product_id: i.product.id,
         quantity: i.quantity,
       }))
 
-      const createRes = await createOrderAPI(orderItems)
+      const customerInfo = {
+        email: formData.email.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+      }
+
+      const shippingAddress = {
+        street: formData.address.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zipCode: formData.zipCode.trim(),
+        country: formData.country.trim(),
+      }
+
+      const createRes = await createOrderAPI(orderItems, customerInfo, shippingAddress)
       if (!createRes.success || !createRes.order) {
         throw new Error(createRes.error || 'Create order failed')
       }

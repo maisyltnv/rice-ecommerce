@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Separator } from "@/components/ui/separator"
 import type { Order } from "@/lib/admin-data"
+import type { Product } from "@/lib/types"
 import { fetchOrdersAPI, updateOrderStatusAPI, type BackendOrder } from "@/lib/api"
 import { Search, Eye, Package, Truck, User, Mail, MapPin, Calendar } from "lucide-react"
 
@@ -45,8 +46,8 @@ export default function AdminOrdersPage() {
         let ordersData = resp.orders
         if (!ordersData && (resp as any).data) {
           // If orders is not directly available, check data property
-          ordersData = Array.isArray((resp as any).data) 
-            ? (resp as any).data 
+          ordersData = Array.isArray((resp as any).data)
+            ? (resp as any).data
             : (resp as any).data?.orders
         }
 
@@ -60,31 +61,31 @@ export default function AdminOrdersPage() {
         // Transform backend orders to admin Order format
         const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => {
           const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
-          
+
           // Try multiple ways to get items (items, order_items, orderItems)
-          const rawItems = (o as any).items || 
-                          (o as any).order_items || 
-                          (o as any).orderItems || 
-                          []
-          
+          const rawItems = (o as any).items ||
+            (o as any).order_items ||
+            (o as any).orderItems ||
+            []
+
           // Extract customer info from order if available - try multiple formats
-          const customerName = (o as any).customer?.name || 
-                              (o as any).customer?.full_name ||
-                              (o as any).customer_name || 
-                              (o as any).customerName ||
-                              (o as any).customer?.username ||
-                              "Customer"
-          const customerEmail = (o as any).customer?.email || 
-                               (o as any).customer_email || 
-                               (o as any).customerEmail ||
-                               (o as any).customer?.email_address ||
-                               "customer@example.com"
-          
+          const customerName = (o as any).customer?.name ||
+            (o as any).customer?.full_name ||
+            (o as any).customer_name ||
+            (o as any).customerName ||
+            (o as any).customer?.username ||
+            "Customer"
+          const customerEmail = (o as any).customer?.email ||
+            (o as any).customer_email ||
+            (o as any).customerEmail ||
+            (o as any).customer?.email_address ||
+            "customer@example.com"
+
           // Extract shipping address if available - try multiple formats
-          const shippingAddress = (o as any).shipping_address || 
-                                 (o as any).shippingAddress || 
-                                 (o as any).shipping ||
-                                 (o as any).address || {
+          const shippingAddress = (o as any).shipping_address ||
+            (o as any).shippingAddress ||
+            (o as any).shipping ||
+            (o as any).address || {
             street: (o as any).street || (o as any).address_line1 || "N/A",
             city: (o as any).city || "N/A",
             state: (o as any).state || (o as any).province || "N/A",
@@ -96,38 +97,56 @@ export default function AdminOrdersPage() {
           const items = rawItems.map((it: any) => {
             // Try to get product info from various formats
             const productId = it.product?.id || it.product_id || 0
-            const productName = it.product?.name || 
-                              it.product_name || 
-                              it.name ||
-                              `Product #${productId}`
-            const productPrice = it.product?.price ?? 
-                               it.price ?? 
-                               it.unit_price ?? 
-                               it.product?.unit_price ??
-                               0
-            const productImage = it.product?.image || 
-                               it.product_image || 
-                               it.image ||
-                               it.product?.image_url ||
-                               undefined
+            const productName = it.product?.name ||
+              it.product_name ||
+              it.name ||
+              `Product #${productId}`
+            const productPrice = it.product?.price ??
+              it.price ??
+              it.unit_price ??
+              it.product?.unit_price ??
+              0
+            const productImage = it.product?.image ||
+              it.product_image ||
+              it.image ||
+              it.product?.image_url ||
+              "/noimage.png"
+
+            // Create a full Product object with defaults for missing fields
+            const product: Product = {
+              id: productId,
+              name: productName,
+              description: it.product?.description || it.description || "",
+              price: Number(productPrice) || 0,
+              image: productImage,
+              images: it.product?.images || it.images || [productImage].filter(Boolean),
+              category: it.product?.category || it.category || "",
+              inStock: it.product?.inStock ?? it.in_stock ?? true,
+              weight: it.product?.weight || it.weight || "",
+              origin: it.product?.origin || it.origin || "",
+              grainType: (it.product?.grainType || it.grain_type || "medium") as "long" | "medium" | "short",
+              cookingTime: it.product?.cookingTime || it.cooking_time || 0,
+              nutritionFacts: it.product?.nutritionFacts || it.nutrition_facts || {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fiber: 0,
+              },
+              features: it.product?.features || it.features || [],
+            }
 
             return {
-              product: {
-                id: productId,
-                name: productName,
-                price: Number(productPrice) || 0,
-                image: productImage,
-              },
+              product,
               quantity: Number(it.quantity ?? it.qty ?? 0) || 0,
             }
-          }).filter(item => item.quantity > 0) // Filter out items with 0 quantity
+          }).filter((item: { product: Product; quantity: number }) => item.quantity > 0) // Filter out items with 0 quantity
 
-          const orderTotal = (o as any).total ?? 
-                            (o as any).total_price ?? 
-                            (o as any).amount ?? 
-                            (o as any).grand_total ?? 
-                            (o as any).totalAmount
-          const computed = items.reduce((sum: number, i: any) => 
+          const orderTotal = (o as any).total ??
+            (o as any).total_price ??
+            (o as any).amount ??
+            (o as any).grand_total ??
+            (o as any).totalAmount
+          const computed = items.reduce((sum: number, i: any) =>
             sum + (Number(i.product.price) || 0) * (Number(i.quantity) || 0), 0)
           const total = Number(orderTotal ?? computed) || 0
 
@@ -208,12 +227,12 @@ export default function AdminOrdersPage() {
       // Remove "ORD-" prefix if present for API call
       const orderIdNum = orderId.replace("ORD-", "")
       const resp = await updateOrderStatusAPI(orderIdNum, newStatus)
-      
+
       if (resp.success) {
         // Update the order in local state
-        setOrders(prevOrders => 
-          prevOrders.map(order => 
-            order.id === orderId 
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === orderId
               ? { ...order, status: newStatus as Order["status"] }
               : order
           )
@@ -294,67 +313,67 @@ export default function AdminOrdersPage() {
       {!loading && !error && (
         <div className="grid grid-cols-1 gap-4">
           {filteredOrders.map((order) => (
-          <Card key={order.id}>
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="font-semibold text-lg">{order.id}</h3>
-                    <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
+            <Card key={order.id}>
+              <CardContent className="p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="font-semibold text-lg">{order.id}</h3>
+                      <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+                      <div>
+                        <p>
+                          <strong>Customer:</strong> {order.customerName}
+                        </p>
+                        <p>
+                          <strong>Email:</strong> {order.customerEmail}
+                        </p>
+                        <p>
+                          <strong>Date:</strong> {formatDate(order.createdAt)}
+                        </p>
+                      </div>
+                      <div>
+                        <p>
+                          <strong>Items:</strong> {order.items.length}
+                        </p>
+                        <p>
+                          <strong>Total:</strong> {formatCurrency(order.total)}
+                        </p>
+                        <p>
+                          <strong>Address:</strong> {order.shippingAddress.city}, {order.shippingAddress.state}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
-                    <div>
-                      <p>
-                        <strong>Customer:</strong> {order.customerName}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {order.customerEmail}
-                      </p>
-                      <p>
-                        <strong>Date:</strong> {formatDate(order.createdAt)}
-                      </p>
-                    </div>
-                    <div>
-                      <p>
-                        <strong>Items:</strong> {order.items.length}
-                      </p>
-                      <p>
-                        <strong>Total:</strong> {formatCurrency(order.total)}
-                      </p>
-                      <p>
-                        <strong>Address:</strong> {order.shippingAddress.city}, {order.shippingAddress.state}
-                      </p>
-                    </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedOrder(order)
+                        setIsDialogOpen(true)
+                      }}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      View Details
+                    </Button>
+                    {order.status === "pending" && (
+                      <Button size="sm" onClick={() => updateOrderStatus(order.id, "processing")}>
+                        <Package className="mr-2 h-4 w-4" />
+                        Process
+                      </Button>
+                    )}
+                    {order.status === "processing" && (
+                      <Button size="sm" onClick={() => updateOrderStatus(order.id, "shipped")}>
+                        <Truck className="mr-2 h-4 w-4" />
+                        Ship
+                      </Button>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedOrder(order)
-                      setIsDialogOpen(true)
-                    }}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                  </Button>
-                  {order.status === "pending" && (
-                    <Button size="sm" onClick={() => updateOrderStatus(order.id, "processing")}>
-                      <Package className="mr-2 h-4 w-4" />
-                      Process
-                    </Button>
-                  )}
-                  {order.status === "processing" && (
-                    <Button size="sm" onClick={() => updateOrderStatus(order.id, "shipped")}>
-                      <Truck className="mr-2 h-4 w-4" />
-                      Ship
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
@@ -455,8 +474,8 @@ export default function AdminOrdersPage() {
                           <div className="flex-1">
                             <div className="flex items-start gap-3">
                               {item.product.image && (
-                                <img 
-                                  src={item.product.image} 
+                                <img
+                                  src={item.product.image}
                                   alt={item.product.name}
                                   className="w-16 h-16 object-cover rounded border border-border"
                                 />
@@ -492,7 +511,7 @@ export default function AdminOrdersPage() {
                         Items: {selectedOrder.items.length} {selectedOrder.items.length === 1 ? 'item' : 'items'}
                       </span>
                       <span className="font-medium">
-                        {formatCurrency(selectedOrder.items.reduce((sum, item) => 
+                        {formatCurrency(selectedOrder.items.reduce((sum, item) =>
                           sum + (item.product.price * item.quantity), 0
                         ))}
                       </span>
@@ -513,7 +532,7 @@ export default function AdminOrdersPage() {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-2 pt-4">
                   {selectedOrder.status === "pending" && (
-                    <Button 
+                    <Button
                       onClick={() => {
                         updateOrderStatus(selectedOrder.id, "processing")
                         setIsDialogOpen(false)
@@ -525,7 +544,7 @@ export default function AdminOrdersPage() {
                     </Button>
                   )}
                   {selectedOrder.status === "processing" && (
-                    <Button 
+                    <Button
                       onClick={() => {
                         updateOrderStatus(selectedOrder.id, "shipped")
                         setIsDialogOpen(false)
@@ -536,8 +555,8 @@ export default function AdminOrdersPage() {
                       Mark as Shipped
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setIsDialogOpen(false)}
                     className="flex-1"
                   >
