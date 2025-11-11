@@ -7,11 +7,32 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import { Package, Truck, CheckCircle, ArrowLeft, User, Mail, MapPin } from "lucide-react"
+import { Package, Truck, CheckCircle, ArrowLeft } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { fetchOrdersAPI, type BackendOrder } from "@/lib/api"
 
-interface DisplayItem { name: string; quantity: number; price: number }
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+
+interface DisplayItem {
+  name: string
+  quantity: number
+  price: number
+  image?: string
+}
+
+const getImageUrl = (imagePath?: string) => {
+  if (!imagePath) return "/noimage.png"
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath
+  }
+  if (imagePath.startsWith("/uploads")) {
+    return `${API_BASE_URL}${imagePath}`
+  }
+  if (imagePath.startsWith("/")) {
+    return imagePath
+  }
+  return `/${imagePath}`
+}
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>()
@@ -43,11 +64,20 @@ export default function OrderDetailPage() {
         return
       }
       const rawItems = (match as any).items || (match as any).order_items || []
-      const items: DisplayItem[] = rawItems.map((it: any) => ({
-        name: it.product?.name || it.product_name || `Product #${it.product_id ?? ''}`,
-        quantity: it.quantity ?? it.qty ?? 0,
-        price: it.product?.price ?? it.price ?? it.unit_price ?? 0,
-      }))
+      const items: DisplayItem[] = rawItems.map((it: any) => {
+        const rawImage =
+          it.product?.image ||
+          it.product_image ||
+          it.image ||
+          it.product?.image_url
+
+        return {
+          name: it.product?.name || it.product_name || `Product #${it.product_id ?? ''}`,
+          quantity: it.quantity ?? it.qty ?? 0,
+          price: it.product?.price ?? it.price ?? it.unit_price ?? 0,
+          image: getImageUrl(rawImage),
+        }
+      })
       const orderTotal = (match as any).total ?? (match as any).total_price ?? (match as any).amount ?? (match as any).grand_total ?? (match as any).totalAmount
       const computed = items.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 0), 0)
       const total = Number(orderTotal ?? computed) || 0
@@ -107,12 +137,26 @@ export default function OrderDetailPage() {
                       <p className="text-sm text-muted-foreground">No items on this order.</p>
                     ) : (
                       order.items.map((item, idx) => (
-                        <div key={idx} className="flex justify-between items-center py-1 border-b last:border-0">
-                          <div>
-                            <p className="font-medium">{item.name}</p>
-                            <p className="text-xs text-muted-foreground">ຈຳນວນ: {item.quantity}</p>
+                        <div key={idx} className="flex items-center justify-between gap-4 py-2 border-b last:border-0">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={item.image || "/noimage.png"}
+                              alt={item.name}
+                              className="w-14 h-14 rounded-md object-cover border border-border"
+                              onError={(e) => {
+                                const target = e.currentTarget
+                                if (!target.dataset.fallback) {
+                                  target.dataset.fallback = "true"
+                                  target.src = "/noimage.png"
+                                }
+                              }}
+                            />
+                            <div>
+                              <p className="font-medium">{item.name}</p>
+                              <p className="text-xs text-muted-foreground">ຈຳນວນ: {item.quantity}</p>
+                            </div>
                           </div>
-                          <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                          <p className="font-medium whitespace-nowrap">{formatPrice(item.price * item.quantity)}</p>
                         </div>
                       ))
                     )}
