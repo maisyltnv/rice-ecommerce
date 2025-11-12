@@ -17,8 +17,116 @@ import {
 import { Separator } from "@/components/ui/separator"
 import type { Order } from "@/lib/admin-data"
 import type { Product } from "@/lib/types"
-import { fetchOrdersAPI, updateOrderStatusAPI, type BackendOrder } from "@/lib/api"
-import { Search, Eye, Package, Truck, User, Mail, MapPin, Calendar } from "lucide-react"
+import { fetchOrdersAPI, updateOrderStatusAPI, fetchOrderByIdAPI, type BackendOrder } from "@/lib/api"
+import { Search, Eye, Package, Truck, User, Mail, MapPin, Calendar, Loader2 } from "lucide-react"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"
+
+const getImageUrl = (imagePath?: string) => {
+  if (!imagePath) return "/noimage.png"
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath
+  }
+  if (imagePath.startsWith("/uploads")) {
+    return `${API_BASE_URL}${imagePath}`
+  }
+  if (imagePath.startsWith("/")) {
+    return imagePath
+  }
+  return `/${imagePath}`
+}
+
+interface RawAddressObject {
+  street?: string
+  address_line1?: string
+  address?: string
+  line1?: string
+  city?: string
+  town?: string
+  district?: string
+  state?: string
+  province?: string
+  region?: string
+  zipCode?: string
+  zip_code?: string
+  postal_code?: string
+  country?: string
+  country_code?: string
+}
+
+const EMPTY_ADDRESS = {
+  street: "N/A",
+  city: "N/A",
+  state: "N/A",
+  zipCode: "N/A",
+  country: "N/A",
+}
+
+const parseStringAddress = (value: string) => {
+  const trimmed = value.trim()
+  if (!trimmed) {
+    return { ...EMPTY_ADDRESS }
+  }
+
+  // Attempt to parse JSON strings first
+  try {
+    const parsed = JSON.parse(trimmed)
+    if (parsed && typeof parsed === "object") {
+      return normalizeObjectAddress(parsed as RawAddressObject)
+    }
+  } catch {
+    // Not JSON, treat as plain text
+  }
+
+  return {
+    ...EMPTY_ADDRESS,
+    street: trimmed,
+  }
+}
+
+const normalizeObjectAddress = (address: RawAddressObject | null | undefined) => {
+  if (!address) {
+    return { ...EMPTY_ADDRESS }
+  }
+
+  return {
+    street: address.street || address.address_line1 || address.address || address.line1 || "N/A",
+    city: address.city || address.town || address.district || "N/A",
+    state: address.state || address.province || address.region || "N/A",
+    zipCode: address.zipCode || address.zip_code || address.postal_code || "N/A",
+    country: address.country || address.country_code || "N/A",
+  }
+}
+
+const mergeAddress = (primary: typeof EMPTY_ADDRESS, fallback: typeof EMPTY_ADDRESS) => {
+  return {
+    street: primary.street !== "N/A" ? primary.street : fallback.street,
+    city: primary.city !== "N/A" ? primary.city : fallback.city,
+    state: primary.state !== "N/A" ? primary.state : fallback.state,
+    zipCode: primary.zipCode !== "N/A" ? primary.zipCode : fallback.zipCode,
+    country: primary.country !== "N/A" ? primary.country : fallback.country,
+  }
+}
+
+const normalizeShippingAddress = (rawAddress: unknown, customerData?: any) => {
+  let normalized = { ...EMPTY_ADDRESS }
+
+  if (typeof rawAddress === "string") {
+    normalized = parseStringAddress(rawAddress)
+  } else if (rawAddress && typeof rawAddress === "object") {
+    normalized = normalizeObjectAddress(rawAddress as RawAddressObject)
+  }
+
+  if (
+    customerData?.address &&
+    (normalized.street === "N/A" || normalized.city === "N/A" || normalized.state === "N/A")
+  ) {
+    const customerAddress = parseStringAddress(String(customerData.address))
+    normalized = mergeAddress(normalized, customerAddress)
+  }
+
+  return normalized
+}
 
 export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -28,6 +136,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isDetailLoading, setIsDetailLoading] = useState(false)
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -59,114 +168,7 @@ export default function AdminOrdersPage() {
         }
 
         // Transform backend orders to admin Order format
-        const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => {
-          const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
-
-          // Try multiple ways to get items (items, order_items, orderItems)
-          const rawItems = (o as any).items ||
-            (o as any).order_items ||
-            (o as any).orderItems ||
-            []
-
-          // Extract customer info from order if available - try multiple formats
-          const customerName = (o as any).customer?.name ||
-            (o as any).customer?.full_name ||
-            (o as any).customer_name ||
-            (o as any).customerName ||
-            (o as any).customer?.username ||
-            "Customer"
-          const customerEmail = (o as any).customer?.email ||
-            (o as any).customer_email ||
-            (o as any).customerEmail ||
-            (o as any).customer?.email_address ||
-            "customer@example.com"
-
-          // Extract shipping address if available - try multiple formats
-          const shippingAddress = (o as any).shipping_address ||
-            (o as any).shippingAddress ||
-            (o as any).shipping ||
-            (o as any).address || {
-            street: (o as any).street || (o as any).address_line1 || "N/A",
-            city: (o as any).city || "N/A",
-            state: (o as any).state || (o as any).province || "N/A",
-            zipCode: (o as any).zip_code || (o as any).zipCode || (o as any).postal_code || "N/A",
-            country: (o as any).country || "N/A"
-          }
-
-          // Map items with better error handling
-          const items = rawItems.map((it: any) => {
-            // Try to get product info from various formats
-            const productId = it.product?.id || it.product_id || 0
-            const productName = it.product?.name ||
-              it.product_name ||
-              it.name ||
-              `Product #${productId}`
-            const productPrice = it.product?.price ??
-              it.price ??
-              it.unit_price ??
-              it.product?.unit_price ??
-              0
-            const productImage = it.product?.image ||
-              it.product_image ||
-              it.image ||
-              it.product?.image_url ||
-              "/noimage.png"
-
-            // Create a full Product object with defaults for missing fields
-            const product: Product = {
-              id: productId,
-              name: productName,
-              description: it.product?.description || it.description || "",
-              price: Number(productPrice) || 0,
-              image: productImage,
-              images: it.product?.images || it.images || [productImage].filter(Boolean),
-              category: it.product?.category || it.category || "",
-              inStock: it.product?.inStock ?? it.in_stock ?? true,
-              weight: it.product?.weight || it.weight || "",
-              origin: it.product?.origin || it.origin || "",
-              grainType: (it.product?.grainType || it.grain_type || "medium") as "long" | "medium" | "short",
-              cookingTime: it.product?.cookingTime || it.cooking_time || 0,
-              nutritionFacts: it.product?.nutritionFacts || it.nutrition_facts || {
-                calories: 0,
-                protein: 0,
-                carbs: 0,
-                fiber: 0,
-              },
-              features: it.product?.features || it.features || [],
-            }
-
-            return {
-              product,
-              quantity: Number(it.quantity ?? it.qty ?? 0) || 0,
-            }
-          }).filter((item: { product: Product; quantity: number }) => item.quantity > 0) // Filter out items with 0 quantity
-
-          const orderTotal = (o as any).total ??
-            (o as any).total_price ??
-            (o as any).amount ??
-            (o as any).grand_total ??
-            (o as any).totalAmount
-          const computed = items.reduce((sum: number, i: any) =>
-            sum + (Number(i.product.price) || 0) * (Number(i.quantity) || 0), 0)
-          const total = Number(orderTotal ?? computed) || 0
-
-          return {
-            id: String(o.id).startsWith("ORD-") ? String(o.id) : `ORD-${o.id}`,
-            customerName,
-            customerEmail,
-            items,
-            total,
-            status: (o.status || "pending") as Order["status"],
-            createdAt: created,
-            shippingAddress: {
-              street: shippingAddress.street || shippingAddress.address_line1 || shippingAddress.address || "N/A",
-              city: shippingAddress.city || "N/A",
-              state: shippingAddress.state || shippingAddress.province || "N/A",
-              zipCode: shippingAddress.zipCode || shippingAddress.zip_code || shippingAddress.postal_code || "N/A",
-              country: shippingAddress.country || "N/A",
-            },
-          }
-        })
+        const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => transformBackendOrder(o))
 
         setOrders(transformedOrders)
       } catch (err) {
@@ -219,6 +221,123 @@ export default function AdminOrdersPage() {
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const transformBackendOrder = (o: BackendOrder): Order => {
+    const created = (o.createdAt || o.created_at || new Date().toISOString()) as string
+
+    const rawItems = (o as any).items ||
+      (o as any).order_items ||
+      (o as any).orderItems ||
+      []
+
+    const customerData = (o as any).customer || {}
+
+    const customerName = customerData.name ||
+      customerData.full_name ||
+      (o as any).customer_name ||
+      (o as any).customerName ||
+      customerData.username ||
+      "Customer"
+
+    const customerEmail = customerData.email ||
+      (o as any).customer_email ||
+      (o as any).customerEmail ||
+      customerData.email_address ||
+      "customer@example.com"
+
+    const shippingAddressRaw = (o as any).shipping_address ||
+      (o as any).shippingAddress ||
+      (o as any).shipping ||
+      (o as any).address
+
+    const shippingAddress = normalizeShippingAddress(shippingAddressRaw, customerData)
+
+    const items = rawItems.map((it: any) => {
+      const productId = it.product?.id || it.product_id || 0
+      const productName = it.product?.name ||
+        it.product_name ||
+        it.name ||
+        `Product #${productId}`
+      const productPrice = it.product?.price ??
+        it.price ??
+        it.unit_price ??
+        it.product?.unit_price ??
+        0
+      const productImageRaw = it.product?.image ||
+        it.product_image ||
+        it.image ||
+        it.product?.image_url
+
+      const productImage = getImageUrl(productImageRaw)
+
+      const product: Product = {
+        id: productId,
+        name: productName,
+        description: it.product?.description || it.description || "",
+        price: Number(productPrice) || 0,
+        image: productImage,
+        images: it.product?.images || it.images || [productImage].filter(Boolean),
+        category: it.product?.category || it.category || "",
+        inStock: it.product?.inStock ?? it.in_stock ?? true,
+        weight: it.product?.weight || it.weight || "",
+        origin: it.product?.origin || it.origin || "",
+        grainType: (it.product?.grainType || it.grain_type || "medium") as "long" | "medium" | "short",
+        cookingTime: it.product?.cookingTime || it.cooking_time || 0,
+        nutritionFacts: it.product?.nutritionFacts || it.nutrition_facts || {
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fiber: 0,
+        },
+        features: it.product?.features || it.features || [],
+      }
+
+      return {
+        product,
+        quantity: Number(it.quantity ?? it.qty ?? 0) || 0,
+      }
+    }).filter((item: { product: Product; quantity: number }) => item.quantity > 0)
+
+    const orderTotal = (o as any).total ??
+      (o as any).total_price ??
+      (o as any).amount ??
+      (o as any).grand_total ??
+      (o as any).totalAmount
+    const computed = items.reduce((sum: number, i: any) =>
+      sum + (Number(i.product.price) || 0) * (Number(i.quantity) || 0), 0)
+    const total = Number(orderTotal ?? computed) || 0
+
+    return {
+      id: String(o.id).startsWith("ORD-") ? String(o.id) : `ORD-${o.id}`,
+      customerName,
+      customerEmail,
+      items,
+      total,
+      status: (o.status || "pending") as Order["status"],
+      createdAt: created,
+      shippingAddress,
+    }
+  }
+
+  const handleViewDetails = async (order: Order) => {
+    setSelectedOrder(order)
+    setIsDialogOpen(true)
+    setIsDetailLoading(true)
+    try {
+      const orderIdNum = order.id.replace("ORD-", "")
+      const response = await fetchOrderByIdAPI(orderIdNum)
+      if (response.success && response.order) {
+        const transformed = transformBackendOrder(response.order as BackendOrder)
+        setSelectedOrder(transformed)
+      } else if (response.error) {
+        console.error("Failed to load order details:", response.error)
+      }
+    } catch (err) {
+      console.error("Error loading order details:", err)
+    } finally {
+      setIsDetailLoading(false)
     }
   }
 
@@ -350,10 +469,7 @@ export default function AdminOrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setSelectedOrder(order)
-                        setIsDialogOpen(true)
-                      }}
+                      onClick={() => handleViewDetails(order)}
                     >
                       <Eye className="mr-2 h-4 w-4" />
                       View Details
@@ -394,7 +510,7 @@ export default function AdminOrdersPage() {
           {selectedOrder && (
             <>
               <DialogHeader>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between">
                   <DialogTitle className="text-2xl">Order Details - {selectedOrder.id}</DialogTitle>
                   <Badge className={getStatusColor(selectedOrder.status)}>
                     {selectedOrder.status}
@@ -406,14 +522,20 @@ export default function AdminOrdersPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6 mt-4">
+              <div className="space-y-6 relative">
+                {isDetailLoading && (
+                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 rounded-lg border border-border/40 z-10">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">Loading latest order details...</p>
+                  </div>
+                )}
                 {/* Customer Information */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3 flex items-center">
+                  <h3 className="font-semibold text-foreground mb-1 flex items-center">
                     <User className="h-4 w-4 mr-2" />
                     Customer Information
                   </h3>
-                  <div className="space-y-2 text-sm bg-muted p-4 rounded-lg">
+                  <div className="space-y-2 text-sm bg-muted p-2 rounded-lg">
                     <div className="flex items-center">
                       <User className="h-4 w-4 mr-2 text-muted-foreground" />
                       <span className="font-medium">{selectedOrder.customerName}</span>
@@ -478,6 +600,13 @@ export default function AdminOrdersPage() {
                                   src={item.product.image}
                                   alt={item.product.name}
                                   className="w-16 h-16 object-cover rounded border border-border"
+                                  onError={(e) => {
+                                    const target = e.currentTarget
+                                    if (!target.dataset.fallback) {
+                                      target.dataset.fallback = "true"
+                                      target.src = "/noimage.png"
+                                    }
+                                  }}
                                 />
                               )}
                               <div className="flex-1">

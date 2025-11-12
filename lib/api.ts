@@ -251,7 +251,7 @@ export interface CreateOrderResponse {
 }
 
 export async function createOrderAPI(
-    items: OrderItemPayload[], 
+    items: OrderItemPayload[],
     customerInfo?: CustomerInfo,
     shippingAddress?: ShippingAddress,
     customerId?: number
@@ -259,14 +259,14 @@ export async function createOrderAPI(
     try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
         const body: any = { items }
-        
+
         if (customerInfo) {
             body.email = customerInfo.email
             if (customerInfo.firstName) body.first_name = customerInfo.firstName
             if (customerInfo.lastName) body.last_name = customerInfo.lastName
             body.customer_name = `${customerInfo.firstName || ''} ${customerInfo.lastName || ''}`.trim()
         }
-        
+
         if (shippingAddress) {
             body.shipping_address = {
                 street: shippingAddress.street,
@@ -276,7 +276,7 @@ export async function createOrderAPI(
                 country: shippingAddress.country,
             }
         }
-        
+
         if (customerId) body.customer_id = customerId
 
         const res = await fetch(`${API_BASE_URL}/orders`, {
@@ -370,6 +370,30 @@ export async function fetchOrdersAPI(): Promise<{ success: boolean; orders?: Bac
         const data = await res.json()
         const responseData = data?.data || data
         return { success: true, orders: responseData }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function fetchOrderByIdAPI(orderId: number | string): Promise<{ success: boolean; order?: BackendOrder; error?: string }> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const res = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        return { success: true, order: responseData }
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
     }
