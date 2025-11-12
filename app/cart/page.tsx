@@ -33,6 +33,10 @@ export default function CartPage() {
     )
   }
 
+  const shippingCost = total >= 50 ? 0 : 5.99
+  const tax = 0
+  const orderTotal = total + shippingCost + tax
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -183,23 +187,23 @@ export default function CartPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span className="font-medium">{total >= 50 ? "ຟຣີ" : formatPrice(5.99)}</span>
+                      <span className="font-medium">{shippingCost === 0 ? "ຟຣີ" : formatPrice(shippingCost)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
-                      <span className="font-medium">{formatPrice(total * 0.08)}</span>
+                      <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex justify-between">
                         <span className="text-lg font-semibold text-foreground">ລວມທັງໝົດ</span>
                         <span className="text-lg font-semibold text-foreground">
-                          {formatPrice(total + (total >= 50 ? 0 : 5.99) + total * 0.08)}
+                          {formatPrice(orderTotal)}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {total < 50 && (
+                  {shippingCost > 0 && (
                     <div className="bg-accent/50 p-3 rounded-lg mb-6">
                       <p className="text-sm text-accent-foreground">
                         ເພີ່ມອີກ {formatPrice(50 - total)} ເພື່ອສົ່ງຟຣີ!

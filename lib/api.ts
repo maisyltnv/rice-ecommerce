@@ -375,6 +375,155 @@ export async function fetchOrdersAPI(): Promise<{ success: boolean; orders?: Bac
     }
 }
 
+// Cart
+
+export interface BackendCartItem {
+    id: number
+    product_id: number
+    product_name: string
+    product_image?: string
+    unit_price: number
+    quantity: number
+    subtotal?: number
+}
+
+export interface BackendCart {
+    id: number
+    customer_id: number
+    total_amount: number
+    items: BackendCartItem[]
+}
+
+const getAuthHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = {}
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+    }
+    return headers
+}
+
+const mapCartResponse = (data: any): BackendCart | undefined => {
+    if (!data) return undefined
+    if (data?.data?.cart) return data.data.cart
+    if (data?.data) return data.data
+    if (data?.cart) return data.cart
+    return data
+}
+
+export async function fetchCartAPI(): Promise<{ success: boolean; cart?: BackendCart; error?: string }> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/cart`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                ...getAuthHeaders(),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        return { success: true, cart: mapCartResponse(data) }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function addCartItemAPI(productId: number, quantity: number): Promise<{ success: boolean; cart?: BackendCart; error?: string }> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/cart/items`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...getAuthHeaders(),
+            },
+            body: JSON.stringify({ product_id: productId, quantity }),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        return { success: true, cart: mapCartResponse(data) }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function updateCartItemAPI(itemId: number, quantity: number): Promise<{ success: boolean; cart?: BackendCart; error?: string }> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/cart/items/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...getAuthHeaders(),
+            },
+            body: JSON.stringify({ quantity }),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        return { success: true, cart: mapCartResponse(data) }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function deleteCartItemAPI(itemId: number): Promise<{ success: boolean; cart?: BackendCart; error?: string }> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/cart/items/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                ...getAuthHeaders(),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        return { success: true, cart: mapCartResponse(data) }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function clearCartAPI(): Promise<{ success: boolean; cart?: BackendCart; error?: string }> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/cart`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                ...getAuthHeaders(),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        return { success: true, cart: mapCartResponse(data) }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
 export async function fetchOrderByIdAPI(orderId: number | string): Promise<{ success: boolean; order?: BackendOrder; error?: string }> {
     try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
