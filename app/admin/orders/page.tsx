@@ -168,7 +168,13 @@ export default function AdminOrdersPage() {
         }
 
         // Transform backend orders to admin Order format
-        const transformedOrders: Order[] = ordersData.map((o: BackendOrder) => transformBackendOrder(o))
+        const transformedOrders: Order[] = ordersData
+          .map((o: BackendOrder) => transformBackendOrder(o))
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt).getTime()
+            const dateB = new Date(b.createdAt).getTime()
+            return dateB - dateA
+          })
 
         setOrders(transformedOrders)
       } catch (err) {
