@@ -78,9 +78,19 @@ const parseStringAddress = (value: string) => {
     // Not JSON, treat as plain text
   }
 
+  const parts = trimmed.split(",").map((part) => part.trim()).filter(Boolean)
+
+  const inferredStreet = parts[0] || "N/A"
+  const inferredCity = parts[1] || "N/A"
+  const inferredState = parts[2] || "N/A"
+  const inferredCountry = parts.length > 3 ? parts[parts.length - 1] : parts[2] || "N/A"
+
   return {
-    ...EMPTY_ADDRESS,
-    street: trimmed,
+    street: inferredStreet,
+    city: inferredCity,
+    state: inferredState,
+    zipCode: "N/A",
+    country: inferredCountry,
   }
 }
 
@@ -126,6 +136,20 @@ const normalizeShippingAddress = (rawAddress: unknown, customerData?: any) => {
   }
 
   return normalized
+}
+
+const formatAddressSummary = (address: typeof EMPTY_ADDRESS) => {
+  const parts = [
+    address.street,
+    address.city,
+    address.state,
+    address.zipCode !== "N/A" ? address.zipCode : "",
+    address.country,
+  ]
+    .map((part) => part?.toString().trim())
+    .filter((part) => part && part !== "N/A")
+
+  return parts.length ? parts.join(", ") : "N/A"
 }
 
 export default function AdminOrdersPage() {
@@ -187,7 +211,6 @@ export default function AdminOrdersPage() {
 
     loadOrders()
   }, [])
-
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -466,7 +489,7 @@ export default function AdminOrdersPage() {
                           <strong>Total:</strong> {formatCurrency(order.total)}
                         </p>
                         <p>
-                          <strong>Address:</strong> {order.shippingAddress.city}, {order.shippingAddress.state}
+                          <strong>Address:</strong> {formatAddressSummary(order.shippingAddress)}
                         </p>
                       </div>
                     </div>
@@ -517,7 +540,7 @@ export default function AdminOrdersPage() {
             <>
               <DialogHeader>
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="text-2xl">Order Details - {selectedOrder.id}</DialogTitle>
+                  <DialogTitle className="text-xl">Order Details - {selectedOrder.id}</DialogTitle>
                   <Badge className={getStatusColor(selectedOrder.status)}>
                     {selectedOrder.status}
                   </Badge>
@@ -528,7 +551,7 @@ export default function AdminOrdersPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6 relative">
+              <div className="space-y-3 relative">
                 {isDetailLoading && (
                   <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 rounded-lg border border-border/40 z-10">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -537,7 +560,7 @@ export default function AdminOrdersPage() {
                 )}
                 {/* Customer Information */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-1 flex items-center">
+                  <h3 className="font-semibold text-foreground mb-1 flex items-center text-sm">
                     <User className="h-4 w-4 mr-2" />
                     Customer Information
                   </h3>
@@ -557,11 +580,11 @@ export default function AdminOrdersPage() {
 
                 {/* Shipping Address */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3 flex items-center">
+                  <h3 className="font-semibold text-foreground mb-1 flex items-center text-sm">
                     <MapPin className="h-4 w-4 mr-2" />
                     Shipping Address
                   </h3>
-                  <div className="text-sm space-y-1 bg-muted p-4 rounded-lg">
+                  <div className="text-sm space-y-1 bg-muted p-2 rounded-lg">
                     {selectedOrder.shippingAddress.street !== "N/A" ? (
                       <>
                         <p className="font-medium">{selectedOrder.customerName}</p>
@@ -586,7 +609,7 @@ export default function AdminOrdersPage() {
 
                 {/* Order Items */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3">Order Items ({selectedOrder.items.length})</h3>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm">Order Items ({selectedOrder.items.length})</h3>
                   {selectedOrder.items.length === 0 ? (
                     <div className="bg-muted p-6 rounded-lg text-center border border-border">
                       <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -597,7 +620,7 @@ export default function AdminOrdersPage() {
                       {selectedOrder.items.map((item, index) => (
                         <div
                           key={index}
-                          className="flex justify-between items-start p-4 bg-muted rounded-lg border border-border"
+                          className="flex justify-between items-start p-2 bg-muted rounded-lg border border-border"
                         >
                           <div className="flex-1">
                             <div className="flex items-start gap-3">
@@ -639,7 +662,7 @@ export default function AdminOrdersPage() {
 
                 {/* Order Summary */}
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3">Order Summary</h3>
+                  <h3 className="font-semibold text-foreground mb-1 text-sm">Order Summary</h3>
                   <div className="space-y-2 bg-muted p-4 rounded-lg">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
@@ -652,7 +675,7 @@ export default function AdminOrdersPage() {
                       </span>
                     </div>
                     <Separator />
-                    <div className="flex justify-between text-lg font-bold">
+                    <div className="flex justify-between font-bold">
                       <span>Total Amount:</span>
                       <span>{formatCurrency(selectedOrder.total)}</span>
                     </div>
