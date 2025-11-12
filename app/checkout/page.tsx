@@ -108,11 +108,14 @@ export default function CheckoutPage() {
       const created = createRes.order
       const orderId = created.id?.toString() || `ORD-${Date.now()}`
 
+      // Clear cart immediately after successful order creation
+      // This ensures the cart is cleared before navigation
+      clearCart()
+
       setPaymentSuccess(true)
       setCurrentStep("processing")
 
       setTimeout(() => {
-        clearCart()
         router.push(`/checkout/success?order_id=${orderId}`)
       }, 1200)
     } catch (error) {

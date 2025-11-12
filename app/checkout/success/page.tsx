@@ -1,11 +1,13 @@
 "use client"
 
+import { useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle, Package, Truck, CreditCard, Download } from "lucide-react"
+import { useCart } from "@/lib/cart-context"
 import Link from "next/link"
 
 export default function CheckoutSuccessPage() {
@@ -13,6 +15,16 @@ export default function CheckoutSuccessPage() {
   const orderId = searchParams.get("order_id")
   const paymentIntentId = searchParams.get("payment_intent")
   const orderNumber = orderId?.replace("ORD-", "RC") || `RC${Date.now().toString().slice(-6)}`
+  const { clearCart } = useCart()
+
+  // Clear cart when success page loads (ensures cart is cleared even if checkout page didn't clear it)
+  useEffect(() => {
+    if (orderId) {
+      // Clear cart when we have an order ID (indicating successful payment)
+      clearCart()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId]) // Run when orderId is available
 
   return (
     <div className="min-h-screen">
