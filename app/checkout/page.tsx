@@ -60,7 +60,7 @@ export default function CheckoutPage() {
 
   const subtotal = total
   const shipping = total >= 50 ? 0 : 5.99
-  const tax = total * 0.08
+  const tax = 0
   const finalTotal = subtotal + shipping + tax
 
   const handleShippingSubmit = (e: React.FormEvent) => {
@@ -74,8 +74,8 @@ export default function CheckoutPage() {
 
     try {
       // Validate required fields
-      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address || 
-          !formData.city || !formData.state || !formData.zipCode || !formData.country) {
+      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address ||
+        !formData.city || !formData.state || !formData.zipCode || !formData.country) {
         setPaymentError("Please fill in all required shipping information.")
         setIsSaving(false)
         return
