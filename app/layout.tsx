@@ -8,6 +8,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { CartProvider } from "@/lib/cart-context"
 import { AuthProvider } from "@/lib/auth-context"
+import { ToastProvider } from "@/components/ui/toast"
 import "./globals.css"
 
 const playfair = Playfair_Display({
@@ -31,10 +32,11 @@ const notoSans = Noto_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Heritage Rice Co. - Premium Quality Rice",
+  title: "ເຂົ້າດີ",
   description:
     "Discover our premium collection of heritage rice varieties, sourced from the finest farms and delivered fresh to your table.",
   generator: "v0.app",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 }
 
 export default function RootLayout({
@@ -47,10 +49,12 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${playfair.variable} ${notoSans.variable} ${notoLao.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
-            <Suspense fallback={<div>Loading...</div>}>
-              {children}
-              <Analytics />
-            </Suspense>
+            <ToastProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                {children}
+                <Analytics />
+              </Suspense>
+            </ToastProvider>
           </CartProvider>
         </AuthProvider>
       </body>

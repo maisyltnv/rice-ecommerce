@@ -1,20 +1,16 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { getAdminStats } from "@/lib/admin-data"
-import { DollarSign, Package, ShoppingCart, Users, TrendingUp, Eye } from "lucide-react"
+import { DollarSign, Package, ShoppingCart, Users, Eye, Badge, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function AdminDashboard() {
-  const stats = getAdminStats()
+  console.log('AdminDashboard: Rendering simple dashboard')
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
+    return formatPrice(amount)
   }
 
   const formatDate = (dateString: string) => {
@@ -44,11 +40,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 pt-20 md:pt-6">
       {/* Header */}
       <div>
-        <h1 className="font-playfair text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's what's happening with your store.</p>
+        <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's what's happening with your store.</p>
       </div>
 
       {/* Stats Cards */}
@@ -59,7 +55,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(45231.89)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+12.5%</span> from last month
             </p>
@@ -72,7 +68,7 @@ export default function AdminDashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
+            <div className="text-2xl font-bold">573</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+8.2%</span> from last month
             </p>
@@ -85,7 +81,7 @@ export default function AdminDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
+            <div className="text-2xl font-bold">45</div>
             <p className="text-xs text-muted-foreground">Active products in catalog</p>
           </CardContent>
         </Card>
@@ -96,7 +92,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+            <div className="text-2xl font-bold">2,350</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600">+3</span> new this week
             </p>
@@ -118,7 +114,11 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.recentOrders.map((order) => (
+              {[
+                { id: "1", customerName: "John Doe", total: 89.99, status: "delivered", createdAt: "2024-01-15" },
+                { id: "2", customerName: "Jane Smith", total: 45.50, status: "shipped", createdAt: "2024-01-14" },
+                { id: "3", customerName: "Bob Johnson", total: 123.75, status: "processing", createdAt: "2024-01-13" }
+              ].map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">{formatCurrency(order.total)}</p>
-                    <p className="text-xs text-muted-foreground">{order.items.length} items</p>
+                    <p className="text-xs text-muted-foreground">1 item</p>
                   </div>
                 </div>
               ))}
@@ -151,9 +151,13 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats.topProducts.map((item, index) => (
+              {[
+                { product: { name: "Premium Jasmine Rice", price: 25.99 }, sales: 156, revenue: 4054.44 },
+                { product: { name: "Organic Brown Rice", price: 18.50 }, sales: 89, revenue: 1646.50 },
+                { product: { name: "Sticky Rice", price: 22.00 }, sales: 67, revenue: 1474.00 }
+              ].map((item, index) => (
                 <div
-                  key={item.product.id}
+                  key={index}
                   className="flex items-center justify-between p-3 border border-border rounded-lg"
                 >
                   <div className="flex items-center space-x-3">
@@ -162,7 +166,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <p className="font-medium text-sm">{item.product.name}</p>
-                      <p className="text-xs text-muted-foreground">Product ID: {item.product.id}</p>
+                      <p className="text-xs text-muted-foreground">Price: {formatCurrency(item.product.price)}</p>
                     </div>
                   </div>
                   <div className="text-right">

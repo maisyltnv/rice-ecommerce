@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/lib/auth-context"
+import { clientLoginAPI, type CustomerLoginRequest } from "@/lib/api"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
@@ -22,7 +22,6 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const { login } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,14 +30,38 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const result = await login(email, password)
-      if (result.success) {
-        router.push("/")
+      const credentials: CustomerLoginRequest = {
+        email: email,
+        password: password
+      }
+
+      console.log('Login: Attempting client login with credentials:', credentials)
+      const result = await clientLoginAPI(credentials)
+      console.log('Login: Client login result:', result)
+
+      if (result.success && result.user && result.token) {
+        console.log('Login: Login successful, storing user data:', result.user)
+
+        // Store user data in localStorage
+        localStorage.setItem("rice-user", JSON.stringify({
+          id: result.user.id,
+          email: result.user.email || email,
+          name: result.user.username,
+          role: result.user.role || 'user',
+          token: result.token
+        }))
+
+        localStorage.setItem("auth-token", result.token)
+
+        // Reload page to update auth context
+        window.location.href = "/"
       } else {
-        setError(result.error || "Login failed")
+        console.log('Login: Login failed:', result.error)
+        setError(result.error || "ການເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ")
       }
     } catch (err) {
-      setError("An unexpected error occurred")
+      console.error('Login: Login error:', err)
+      setError(`ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ API: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
@@ -69,8 +92,9 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ປ້ອນອີເມວຂອງທ່ານ"
+                    placeholder="ປ້ອນອີເມວ"
                     required
+                    autoComplete="email"
                   />
                 </div>
 
@@ -122,14 +146,22 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-6 p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">ບັນຊີທົດລອງ:</p>
+                <p className="text-sm text-muted-foreground mb-2">🛡️ ຂໍ້ມູນບັນຊີທົດລອງ:</p>
                 <div className="text-xs space-y-1">
                   <p>
-                    <strong>Admin:</strong> admin@heritagerice.com / password123
+                    <strong>ອີເມວ:</strong> john@example.com
                   </p>
                   <p>
-                    <strong>User:</strong> user@example.com / password123
+                    <strong>ລະຫັດຜ່ານ:</strong> password123
                   </p>
+                </div>
+                <div className="mt-4 text-center">
+                  <Link
+                    href="/admin/login"
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    🛡️ ເຂົ້າສູ່ລະບົບ Admin
+                  </Link>
                 </div>
               </div>
             </CardContent>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ShoppingCart, Menu, X, User, LogOut, Settings, Shield } from "lucide-react"
+import { ShoppingCart, Menu, X, User, LogOut, Settings, Shield, Package } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useAuth } from "@/lib/auth-context"
 
@@ -26,8 +27,15 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary"></div>
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Image
+              src="/riceLogo.png"
+              alt="Heritage Rice Logo"
+              width={40}
+              height={40}
+              className="h-8 w-auto object-contain"
+              priority
+            />
             <span className="font-playfair text-xl font-semibold text-foreground">ເຂົ້າດີ</span>
           </Link>
 
@@ -110,6 +118,16 @@ export function Header() {
               </Link>
             )}
 
+            {/* Orders Button - Visible when authenticated */}
+            {isAuthenticated && (
+              <Link href="/orders">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  <Package className="h-4 w-4 mr-2" />
+                  ປະຫວັດຄຳສັ່ງຊື້
+                </Button>
+              </Link>
+            )}
+
             {/* Shopping Cart */}
             <Link href="/cart">
               <Button variant="ghost" size="sm" className="relative">
@@ -121,6 +139,19 @@ export function Header() {
                 )}
               </Button>
             </Link>
+
+            {/* Logout Button - Visible when logged in */}
+            {isAuthenticated && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={logout}
+                className="hidden sm:flex text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                ອອກຈາກລະບົບ
+              </Button>
+            )}
 
             {/* Mobile menu button */}
             <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -160,6 +191,13 @@ export function Header() {
               {isAuthenticated && user ? (
                 <>
                   <Link
+                    href="/orders"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center"
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    ປະຫວັດຄຳສັ່ງຊື້
+                  </Link>
+                  <Link
                     href="/account"
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
@@ -173,7 +211,12 @@ export function Header() {
                       ແດຊບອດຜູ້ບໍລິຫານ
                     </Link>
                   )}
-                  <Button variant="ghost" size="sm" className="justify-start" onClick={logout}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={logout}
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     ອອກຈາກລະບົບ
                   </Button>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/lib/auth-context"
 import { User, MapPin, Save } from "lucide-react"
@@ -151,19 +151,19 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <Label htmlFor="state">State</Label>
-                    <Select value={formData.state} onValueChange={(value) => handleInputChange("state", value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select state" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CA">California</SelectItem>
-                        <SelectItem value="NY">New York</SelectItem>
-                        <SelectItem value="TX">Texas</SelectItem>
-                        <SelectItem value="FL">Florida</SelectItem>
-                        <SelectItem value="WA">Washington</SelectItem>
-                        <SelectItem value="OR">Oregon</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select
+                      value={formData.state}
+                      onChange={(value) => handleInputChange("state", value.toString())}
+                      options={[
+                        { value: "CA", label: "California" },
+                        { value: "NY", label: "New York" },
+                        { value: "TX", label: "Texas" },
+                        { value: "FL", label: "Florida" },
+                        { value: "WA", label: "Washington" },
+                        { value: "OR", label: "Oregon" },
+                      ]}
+                      placeholder="Select state"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,15 +178,15 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <Label htmlFor="country">Country</Label>
-                    <Select value={formData.country} onValueChange={(value) => handleInputChange("country", value)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="US">United States</SelectItem>
-                        <SelectItem value="CA">Canada</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Select
+                      value={formData.country}
+                      onChange={(value) => handleInputChange("country", value.toString())}
+                      options={[
+                        { value: "US", label: "United States" },
+                        { value: "CA", label: "Canada" },
+                      ]}
+                      placeholder="Select country"
+                    />
                   </div>
                 </div>
               </CardContent>

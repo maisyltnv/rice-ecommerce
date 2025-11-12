@@ -19,6 +19,7 @@ import {
   getCardBrand,
 } from "@/lib/payment"
 import { CreditCard, Lock, Loader2, AlertCircle } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 
 interface PaymentFormProps {
   amount: number
@@ -161,7 +162,7 @@ export function PaymentForm({ amount, onSuccess, onError }: PaymentFormProps) {
 
         {paymentMethod === "card" && (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="nameOnCard">Name on Card</Label>
               <Input
                 id="nameOnCard"
@@ -178,7 +179,7 @@ export function PaymentForm({ amount, onSuccess, onError }: PaymentFormProps) {
               )}
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="cardNumber">Card Number</Label>
               <div className="relative">
                 <Input
@@ -204,7 +205,7 @@ export function PaymentForm({ amount, onSuccess, onError }: PaymentFormProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="expiryDate">Expiry Date</Label>
                 <Input
                   id="expiryDate"
@@ -221,7 +222,7 @@ export function PaymentForm({ amount, onSuccess, onError }: PaymentFormProps) {
                   </p>
                 )}
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="cvv">CVV</Label>
                 <Input
                   id="cvv"
@@ -249,7 +250,7 @@ export function PaymentForm({ amount, onSuccess, onError }: PaymentFormProps) {
               ) : (
                 <>
                   <Lock className="mr-2 h-4 w-4" />
-                  Pay ${amount.toFixed(2)}
+                  Pay {formatPrice(amount)}
                 </>
               )}
             </Button>

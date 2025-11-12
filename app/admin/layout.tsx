@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useAuth } from "@/lib/auth-context"
 import { AdminSidebar } from "@/components/admin-sidebar"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useEffect } from "react"
 
 export default function AdminLayout({
@@ -14,9 +13,17 @@ export default function AdminLayout({
 }) {
   const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Skip authentication check for login page
+  if (pathname === "/admin/login") {
+    return <>{children}</>
+  }
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.email !== "admin@heritagerice.com")) {
+    console.log('Admin layout auth check:', { isLoading, isAuthenticated, user })
+    if (!isLoading && (!isAuthenticated || !user)) {
+      console.log('Redirecting to login - not authenticated or no user')
       router.push("/admin/login")
     }
   }, [isAuthenticated, isLoading, user, router])
@@ -32,14 +39,17 @@ export default function AdminLayout({
     )
   }
 
-  if (!isAuthenticated || user?.email !== "admin@heritagerice.com") {
+  if (!isAuthenticated || !user) {
+    console.log('Admin layout: Not authenticated or no user, returning null')
     return null
   }
 
+  console.log('Admin layout: User authenticated, rendering admin layout')
+
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex flex-col md:flex-row h-screen bg-background">
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto w-full md:w-auto">{children}</main>
     </div>
   )
 }

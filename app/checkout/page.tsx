@@ -9,14 +9,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { PaymentForm } from "@/components/payment-form"
 import { useCart } from "@/lib/cart-context"
-import { Truck, AlertCircle, CheckCircle } from "lucide-react"
+import { Truck, AlertCircle, CheckCircle, Lock, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { formatPrice } from "@/lib/utils"
+import Image from "next/image"
+import type { Order } from "@/lib/admin-data"
+import { createOrderAPI, type OrderItemPayload } from "@/lib/api"
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -24,6 +27,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState<"shipping" | "payment" | "processing">("shipping")
   const [paymentError, setPaymentError] = useState("")
   const [paymentSuccess, setPaymentSuccess] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   const [formData, setFormData] = useState({
     email: "",
@@ -33,7 +37,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "US",
+    country: "LA",
   })
 
   if (items.length === 0) {
@@ -64,19 +68,58 @@ export default function CheckoutPage() {
     setCurrentStep("payment")
   }
 
-  const handlePaymentSuccess = (paymentIntentId: string) => {
-    setPaymentSuccess(true)
-    setCurrentStep("processing")
+  const handleSaveOrder = async () => {
+    setIsSaving(true)
+    setPaymentError("")
 
-    // Simulate order processing
-    setTimeout(() => {
-      clearCart()
-      router.push(`/checkout/success?payment_intent=${paymentIntentId}`)
-    }, 2000)
-  }
+    try {
+      // Validate required fields
+      if (!formData.email || !formData.firstName || !formData.lastName || !formData.address || 
+          !formData.city || !formData.state || !formData.zipCode || !formData.country) {
+        setPaymentError("Please fill in all required shipping information.")
+        setIsSaving(false)
+        return
+      }
 
-  const handlePaymentError = (error: string) => {
-    setPaymentError(error)
+      const orderItems: OrderItemPayload[] = items.map(i => ({
+        product_id: i.product.id,
+        quantity: i.quantity,
+      }))
+
+      const customerInfo = {
+        email: formData.email.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+      }
+
+      const shippingAddress = {
+        street: formData.address.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zipCode: formData.zipCode.trim(),
+        country: formData.country.trim(),
+      }
+
+      const createRes = await createOrderAPI(orderItems, customerInfo, shippingAddress)
+      if (!createRes.success || !createRes.order) {
+        throw new Error(createRes.error || 'Create order failed')
+      }
+
+      const created = createRes.order
+      const orderId = created.id?.toString() || `ORD-${Date.now()}`
+
+      setPaymentSuccess(true)
+      setCurrentStep("processing")
+
+      setTimeout(() => {
+        clearCart()
+        router.push(`/checkout/success?order_id=${orderId}`)
+      }, 1200)
+    } catch (error) {
+      setPaymentError("Failed to save order. Please try again.")
+      console.error("Error saving order:", error)
+      setIsSaving(false)
+    }
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -88,18 +131,18 @@ export default function CheckoutPage() {
       <Header />
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ຊຳລະເງິນ</h1>
-            <div className="flex items-center space-x-4 text-sm">
-              <span className={currentStep === "shipping" ? "text-primary font-medium" : "text-muted-foreground"}>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-4">ຊຳລະເງິນ</h1>
+            <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm overflow-x-auto pb-2">
+              <span className={currentStep === "shipping" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 1. ຈັດສົ່ງ
               </span>
               <span className="text-muted-foreground">→</span>
-              <span className={currentStep === "payment" ? "text-primary font-medium" : "text-muted-foreground"}>
+              <span className={currentStep === "payment" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 2. ຊຳລະເງິນ
               </span>
               <span className="text-muted-foreground">→</span>
-              <span className={currentStep === "processing" ? "text-primary font-medium" : "text-muted-foreground"}>
+              <span className={currentStep === "processing" ? "text-primary font-medium whitespace-nowrap" : "text-muted-foreground whitespace-nowrap"}>
                 3. ສຳເລັດ
               </span>
             </div>
@@ -116,7 +159,7 @@ export default function CheckoutPage() {
                       <CardTitle>ຂໍ້ມູນຕິດຕໍ່</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="email">ອີເມວ</Label>
                         <Input
                           id="email"
@@ -137,8 +180,8 @@ export default function CheckoutPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
                           <Label htmlFor="firstName">ຊື່</Label>
                           <Input
                             id="firstName"
@@ -147,7 +190,7 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="lastName">ນາມສະກຸນ</Label>
                           <Input
                             id="lastName"
@@ -157,7 +200,7 @@ export default function CheckoutPage() {
                           />
                         </div>
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="address">ທີ່ຢູ່</Label>
                         <Input
                           id="address"
@@ -166,8 +209,8 @@ export default function CheckoutPage() {
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
                           <Label htmlFor="city">ເມືອງ</Label>
                           <Input
                             id="city"
@@ -176,23 +219,37 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="state">ລັດ/ແຂວງ</Label>
-                          <Select value={formData.state} onValueChange={(value) => handleInputChange("state", value)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="ເລືອກລັດ/ແຂວງ" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="CA">California</SelectItem>
-                              <SelectItem value="NY">New York</SelectItem>
-                              <SelectItem value="TX">Texas</SelectItem>
-                              <SelectItem value="FL">Florida</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div className="space-y-2">
+                          <Label htmlFor="state">ແຂວງ</Label>
+                          <Select
+                            value={formData.state}
+                            onChange={(value) => handleInputChange("state", value.toString())}
+                            options={[
+                              { value: "AT", label: "ແຂວງ ອັດຕະປື" },
+                              { value: "BK", label: "ແຂວງ ບໍ່ແກ້ວ" },
+                              { value: "BL", label: "ແຂວງ ບໍລິຄໍາໄຊ" },
+                              { value: "CH", label: "ແຂວງ ຈໍາປາສັກ" },
+                              { value: "HO", label: "ແຂວງ ຫົວພັນ" },
+                              { value: "KH", label: "ແຂວງ ຄໍາມ່ວນ" },
+                              { value: "LN", label: "ແຂວງ ຫຼວງນໍ້າທາ" },
+                              { value: "LP", label: "ແຂວງ ຫຼວງພະບາງ" },
+                              { value: "OU", label: "ແຂວງ ອຸດົມໄຊ" },
+                              { value: "PH", label: "ແຂວງ ຜົ້ງສາລີ" },
+                              { value: "SK", label: "ແຂວງ ເຊກອງ" },
+                              { value: "SL", label: "ແຂວງ ສາລະວັນ" },
+                              { value: "SV", label: "ແຂວງ ສະຫວັນນະເຂດ" },
+                              { value: "VT", label: "ນະຄອນຫຼວງວຽງຈັນ" },
+                              { value: "VI", label: "ແຂວງ ວຽງຈັນ" },
+                              { value: "XA", label: "ແຂວງ ຊຽງຂວາງ" },
+                              { value: "XS", label: "ແຂວງ ໄຊສົມບູນ" },
+                              { value: "XY", label: "ແຂວງ ໄຊຍະບູລີ" }
+                            ]}
+                            placeholder="ເລືອກແຂວງ"
+                          />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
                           <Label htmlFor="zipCode">ລະຫັດໄປສະນີ</Label>
                           <Input
                             id="zipCode"
@@ -201,20 +258,17 @@ export default function CheckoutPage() {
                             required
                           />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                           <Label htmlFor="country">ປະເທດ</Label>
                           <Select
                             value={formData.country}
-                            onValueChange={(value) => handleInputChange("country", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="US">United States</SelectItem>
-                              <SelectItem value="CA">Canada</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            onChange={(value) => handleInputChange("country", value.toString())}
+                            options={[
+                              { value: "LA", label: "ປະເທດລາວ" },
+                            ]}
+                            placeholder="ເລືອກປະເທດ"
+                            disabled
+                          />
                         </div>
                       </div>
                     </CardContent>
@@ -236,7 +290,52 @@ export default function CheckoutPage() {
                     </Alert>
                   )}
 
-                  <PaymentForm amount={finalTotal} onSuccess={handlePaymentSuccess} onError={handlePaymentError} />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Lock className="h-5 w-5" />
+                        <span>Payment Information</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex justify-center">
+                        <div className="relative w-full max-w-md">
+                          <Image
+                            src="/myQr.jpeg"
+                            alt="QR Code for Payment"
+                            width={400}
+                            height={400}
+                            className="w-full h-auto rounded-lg"
+                            priority
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        className="w-full"
+                        onClick={handleSaveOrder}
+                        disabled={isSaving || paymentSuccess}
+                      >
+                        {isSaving || paymentSuccess ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="mr-2 h-4 w-4" />
+                            Pay {formatPrice(finalTotal)}
+                          </>
+                        )}
+                      </Button>
+
+                      <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
+                        <Lock className="h-3 w-3" />
+                        <span>Your payment information is secure and encrypted</span>
+                      </div>
+                    </CardContent>
+                  </Card>
 
                   <Button variant="outline" onClick={() => setCurrentStep("shipping")} className="w-full" type="button">
                     ກັບໄປໜ້າຈັດສົ່ງ
@@ -279,24 +378,28 @@ export default function CheckoutPage() {
 
             {/* Order Summary */}
             <div>
-              <Card className="sticky top-24">
+              <Card className="lg:sticky lg:top-24">
                 <CardHeader>
-                  <CardTitle>ສະຫລຸບຄຳສັ່ງຊື້</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">ສະຫລຸບຄຳສັ່ງຊື້</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4 mb-6">
                     {items.map((item) => (
                       <div key={item.product.id} className="flex items-center space-x-3">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
+                          src={item.product.image || "/noimage.png"}
                           alt={item.product.name}
                           className="w-12 h-12 object-cover rounded"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/noimage.png"
+                          }}
                         />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
                         </div>
-                        <p className="font-medium text-sm">${(item.product.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium text-sm">{formatPrice(item.product.price * item.quantity)}</p>
                       </div>
                     ))}
                   </div>
@@ -306,27 +409,27 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ລາຄາ</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>{formatPrice(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                      <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>{formatPrice(tax)}</span>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between font-semibold text-lg">
                       <span>ລວມທັງໝົດ</span>
-                      <span>${finalTotal.toFixed(2)}</span>
+                      <span>{formatPrice(finalTotal)}</span>
                     </div>
                   </div>
 
                   {total < 50 && currentStep === "shipping" && (
                     <div className="bg-accent/50 p-3 rounded-lg mt-6">
                       <p className="text-sm text-accent-foreground">
-                        Add ${(50 - total).toFixed(2)} more for free shipping!
+                        Add {formatPrice(50 - total)} more for free shipping!
                       </p>
                     </div>
                   )}

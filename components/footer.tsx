@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Facebook, Instagram, Twitter } from "lucide-react"
@@ -10,10 +11,16 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="h-8 w-8 rounded-full bg-background"></div>
+            <Link href="/" className="flex items-center space-x-2 mb-4 hover:opacity-80 transition-opacity">
+              <Image
+                src="/riceLogo.png"
+                alt="Heritage Rice Logo"
+                width={32}
+                height={32}
+                className="h-8 w-auto object-contain"
+              />
               <span className="font-playfair text-xl font-semibold">ເຂົ້າດີ.</span>
-            </div>
+            </Link>
             <p className="text-background/80 mb-4">
               ພວກເຮົາໄດ້ຄັດສັນຂ້າວຊັ້ນນໍາຢ່າງພິຖີພິຖັນ ທົ່ວປະເທດລາວ.
             </p>
@@ -101,7 +108,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
-          <p className="text-background/60">© 2025 Heritage Rice Co. ສິດທິທັງໝົດຖືກສົງວນ.</p>
+          <p className="text-background/60">© 2025 ເຂົ້າດີ. ສິດທິທັງໝົດຖືກສະຫງວນ.</p>
         </div>
       </div>
     </footer>

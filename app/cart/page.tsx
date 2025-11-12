@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useCart } from "@/lib/cart-context"
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function CartPage() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart()
@@ -32,42 +33,96 @@ export default function CartPage() {
     )
   }
 
+  const shippingCost = total >= 50 ? 0 : 5.99
+  const tax = 0
+  const orderTotal = total + shippingCost + tax
+
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h1 className="font-playfair text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
-            <p className="text-muted-foreground">
+      <main className="py-4">
+        <div className="container mx-auto px-2 sm:px-2 lg:px-2">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               {items.length} ລາຍການໃນກະຕ່າຂອງທ່ານ
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-2">
               {items.map((item) => (
                 <Card key={item.product.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
+                  <CardContent className="px-3 py-3 sm:px-4 sm:py-0">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {/* Product Image */}
+                      <div className="flex-shrink-0 self-center sm:self-start">
                         <img
-                          src={item.product.image || "/placeholder.svg"}
+                          src={item.product.image || "/noimage.png"}
                           alt={item.product.name}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-24 h-24 sm:w-20 sm:h-20 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/noimage.png"
+                          }}
                         />
                       </div>
+
+                      {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <Link href={`/products/${item.product.id}`}>
-                          <h3 className="font-playfair text-lg font-semibold text-foreground hover:text-primary transition-colors">
+                          <h3 className="font-playfair text-base sm:text-lg font-semibold text-foreground hover:text-primary transition-colors mb-2">
                             {item.product.name}
                           </h3>
                         </Link>
-                        <p className="text-sm text-muted-foreground mb-2">{item.product.description}</p>
-                        <p className="text-sm text-muted-foreground">Weight: {item.product.weight}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{item.product.description}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2">Weight: {item.product.weight}</p>
+
+                        {/* Mobile: Quantity and Price Row */}
+                        <div className="flex flex-col sm:hidden gap-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">ຈຳນວນ:</span>
+                            <div className="flex items-center border border-border rounded-lg">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="px-2 py-1 text-center min-w-[2rem] text-sm">{item.quantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-foreground">
+                              {formatPrice(item.product.price * item.quantity)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(item.product.id)}
+                              className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <div className="text-xs text-muted-foreground">{formatPrice(item.product.price)} ຕໍ່ຊິ້ນ</div>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-4">
+
+                      {/* Desktop: Quantity, Price, Remove */}
+                      <div className="hidden sm:flex items-center space-x-4">
                         {/* Quantity Controls */}
                         <div className="flex items-center border border-border rounded-lg">
                           <Button
@@ -88,11 +143,11 @@ export default function CartPage() {
                           </Button>
                         </div>
                         {/* Price */}
-                        <div className="text-right">
+                        <div className="text-right min-w-[80px]">
                           <div className="font-semibold text-foreground">
-                            ${(item.product.price * item.quantity).toFixed(2)}
+                            {formatPrice(item.product.price * item.quantity)}
                           </div>
-                          <div className="text-sm text-muted-foreground">${item.product.price} ຕໍ່ຊິ້ນ</div>
+                          <div className="text-xs text-muted-foreground">{formatPrice(item.product.price)} ຕໍ່ຊິ້ນ</div>
                         </div>
                         {/* Remove Button */}
                         <Button
@@ -109,49 +164,49 @@ export default function CartPage() {
                 </Card>
               ))}
 
-              <div className="flex justify-between items-center pt-4">
-                <Button variant="outline" onClick={clearCart}>
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4">
+                <Button variant="outline" onClick={clearCart} className="w-full sm:w-auto">
                   ລ້າງກະຕ່າ
                 </Button>
-                <Link href="/products">
-                  <Button variant="outline">ຊື້ຕໍ່</Button>
+                <Link href="/products" className="w-full sm:w-auto">
+                  <Button variant="outline" className="w-full sm:w-auto">ຊື້ຕໍ່</Button>
                 </Link>
               </div>
             </div>
 
             {/* Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-24">
-                <CardContent className="p-6">
+              <Card className="lg:sticky lg:top-24">
+                <CardContent className="p-4 sm:p-6">
                   <h2 className="font-playfair text-xl font-semibold text-foreground mb-4">ສະຫລຸບຄຳສັ່ງຊື້</h2>
 
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ລາຄາ</span>
-                      <span className="font-medium">${total.toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(total)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ຄ່າສົ່ງ</span>
-                      <span className="font-medium">{total >= 50 ? "ຟຣີ" : "$5.99"}</span>
+                      <span className="font-medium">{shippingCost === 0 ? "ຟຣີ" : formatPrice(shippingCost)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">ອາກອນ</span>
-                      <span className="font-medium">${(total * 0.08).toFixed(2)}</span>
+                      <span className="font-medium">{formatPrice(tax)}</span>
                     </div>
                     <div className="border-t border-border pt-3">
                       <div className="flex justify-between">
                         <span className="text-lg font-semibold text-foreground">ລວມທັງໝົດ</span>
                         <span className="text-lg font-semibold text-foreground">
-                          ${(total + (total >= 50 ? 0 : 5.99) + total * 0.08).toFixed(2)}
+                          {formatPrice(orderTotal)}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {total < 50 && (
+                  {shippingCost > 0 && (
                     <div className="bg-accent/50 p-3 rounded-lg mb-6">
                       <p className="text-sm text-accent-foreground">
-                        ເພີ່ມອີກ ${(50 - total).toFixed(2)} ເພື່ອສົ່ງຟຣີ!
+                        ເພີ່ມອີກ {formatPrice(50 - total)} ເພື່ອສົ່ງຟຣີ!
                       </p>
                     </div>
                   )}

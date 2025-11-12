@@ -12,6 +12,7 @@ import { products } from "@/lib/data"
 import { useCart } from "@/lib/cart-context"
 import { Minus, Plus, ShoppingCart, Heart, Share2, Clock, MapPin, Check } from "lucide-react"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -55,40 +56,48 @@ export default function ProductDetailPage() {
       <main className="py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
-          <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
-            <Link href="/" className="hover:text-foreground">
+          <nav className="flex items-center space-x-2 text-xs sm:text-sm text-muted-foreground mb-6 sm:mb-8 overflow-x-auto">
+            <Link href="/" className="hover:text-foreground whitespace-nowrap">
               ໜ້າຫຼັກ
             </Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-foreground">
+            <Link href="/products" className="hover:text-foreground whitespace-nowrap">
               ສິນຄ້າ
             </Link>
             <span>/</span>
-            <span className="text-foreground">{product.name}</span>
+            <span className="text-foreground truncate max-w-[200px] sm:max-w-none">{product.name}</span>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12 lg:mb-16">
             {/* Product Images */}
             <div>
               <div className="mb-4">
                 <img
-                  src={product.images[selectedImage] || "/placeholder.svg"}
+                  src={product.images[selectedImage] || "/noimage.png"}
                   alt={product.name}
-                  className="w-full h-96 object-cover rounded-lg"
+                  className="w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement
+                    target.src = "/noimage.png"
+                  }}
                 />
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 overflow-x-auto pb-2">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index ? "border-primary" : "border-transparent"
+                    className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index ? "border-primary" : "border-transparent"
                       }`}
                   >
                     <img
-                      src={image || "/placeholder.svg"}
+                      src={image || "/noimage.png"}
                       alt={`${product.name} ${index + 1}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        target.src = "/noimage.png"
+                      }}
                     />
                   </button>
                 ))}
@@ -98,31 +107,31 @@ export default function ProductDetailPage() {
             {/* Product Info */}
             <div>
               {product.badge && <Badge className="mb-4 bg-primary text-primary-foreground">{product.badge}</Badge>}
-              <h1 className="font-playfair text-3xl font-bold text-foreground mb-4">{product.name}</h1>
-              <p className="text-lg text-muted-foreground mb-6">{product.description}</p>
+              <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-4">{product.name}</h1>
+              <p className="text-base sm:text-lg text-muted-foreground mb-6">{product.description}</p>
 
               {/* Price */}
               <div className="flex items-center space-x-4 mb-6">
-                <span className="text-3xl font-bold text-foreground">${product.price}</span>
+                <span className="text-2xl sm:text-3xl font-bold text-foreground">{formatPrice(product.price)}</span>
                 {product.originalPrice && (
-                  <span className="text-xl text-muted-foreground line-through">${product.originalPrice}</span>
+                  <span className="text-lg sm:text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                 )}
               </div>
 
               {/* Product Details */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">ແຫຼ່ງກຳເນີດ: {product.origin}</span>
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-muted-foreground">ແຫຼ່ງກຳເນີດ: {product.origin}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">ເວລາຕົ້ມ: {product.cookingTime} ນາທີ</span>
+                  <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-xs sm:text-sm text-muted-foreground">ເວລາຕົ້ມ: {product.cookingTime} ນາທີ</span>
                 </div>
               </div>
 
               {/* Quantity Selector */}
-              <div className="flex items-center space-x-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
                 <span className="text-sm font-medium">ຈຳນວນ:</span>
                 <div className="flex items-center border border-border rounded-lg">
                   <Button
@@ -130,11 +139,12 @@ export default function ProductDetailPage() {
                     size="sm"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={quantity <= 1}
+                    className="h-9"
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="px-4 py-2 text-center min-w-[3rem]">{quantity}</span>
-                  <Button variant="ghost" size="sm" onClick={() => setQuantity(quantity + 1)}>
+                  <Button variant="ghost" size="sm" onClick={() => setQuantity(quantity + 1)} className="h-9">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
@@ -151,7 +161,7 @@ export default function ProductDetailPage() {
                   ) : (
                     <>
                       <ShoppingCart className="mr-2 h-4 w-4" />
-                      {product.inStock ? `ເພີ່ມໃສ່ກະຕ່າ - $${(product.price * quantity).toFixed(2)}` : "ສິນຄ້າໝົດ"}
+                      {product.inStock ? `ເພີ່ມໃສ່ກະຕ່າ - ${formatPrice(product.price * quantity)}` : "ສິນຄ້າໝົດ"}
                     </>
                   )}
                 </Button>
@@ -273,9 +283,13 @@ export default function ProductDetailPage() {
                       <Link href={`/products/${relatedProduct.id}`}>
                         <div className="relative overflow-hidden rounded-t-lg">
                           <img
-                            src={relatedProduct.image || "/placeholder.svg"}
+                            src={relatedProduct.image || "/noimage.png"}
                             alt={relatedProduct.name}
                             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement
+                              target.src = "/noimage.png"
+                            }}
                           />
                           {relatedProduct.badge && (
                             <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
@@ -291,7 +305,7 @@ export default function ProductDetailPage() {
                           </h3>
                         </Link>
                         <div className="flex items-center justify-between">
-                          <span className="text-lg font-bold text-foreground">${relatedProduct.price}</span>
+                          <span className="text-lg font-bold text-foreground">{formatPrice(relatedProduct.price)}</span>
                           <Button size="sm">ເພີ່ມໃສ່ກະຕ່າ</Button>
                         </div>
                       </div>

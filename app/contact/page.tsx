@@ -93,7 +93,7 @@ export default function ContactPage() {
                                     <div className="flex items-start gap-3">
                                         <Mail className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                                         <div>
-                                            <p className="font-semibold text-sm mb-1">ອີເມລ</p>
+                                            <p className="font-semibold text-sm mb-1">ຊື່ຜູ້ໃຊ້ງານ</p>
                                             <p className="text-sm text-muted-foreground">
                                                 info@khaodee.com<br />
                                                 support@khaodee.com
