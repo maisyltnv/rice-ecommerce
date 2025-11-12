@@ -40,8 +40,8 @@ export default function CartPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="py-4">
+        <div className="container mx-auto px-2 sm:px-2 lg:px-2">
           <div className="mb-6 sm:mb-8">
             <h1 className="font-playfair text-2xl sm:text-3xl font-bold text-foreground mb-2">ກະຕ່າສິນຄ້າ</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
@@ -49,12 +49,12 @@ export default function CartPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 lg:gap-4">
             {/* Cart Items */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-2 space-y-2">
               {items.map((item) => (
                 <Card key={item.product.id}>
-                  <CardContent className="p-4 sm:p-6">
+                  <CardContent className="px-3 py-3 sm:px-4 sm:py-0">
                     <div className="flex flex-col sm:flex-row gap-4">
                       {/* Product Image */}
                       <div className="flex-shrink-0 self-center sm:self-start">
@@ -68,7 +68,7 @@ export default function CartPage() {
                           }}
                         />
                       </div>
-                      
+
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <Link href={`/products/${item.product.id}`}>
@@ -77,8 +77,8 @@ export default function CartPage() {
                           </h3>
                         </Link>
                         <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{item.product.description}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">Weight: {item.product.weight}</p>
-                        
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2">Weight: {item.product.weight}</p>
+
                         {/* Mobile: Quantity and Price Row */}
                         <div className="flex flex-col sm:hidden gap-3">
                           <div className="flex items-center justify-between">
@@ -120,7 +120,7 @@ export default function CartPage() {
                           <div className="text-xs text-muted-foreground">{formatPrice(item.product.price)} ຕໍ່ຊິ້ນ</div>
                         </div>
                       </div>
-                      
+
                       {/* Desktop: Quantity, Price, Remove */}
                       <div className="hidden sm:flex items-center space-x-4">
                         {/* Quantity Controls */}
