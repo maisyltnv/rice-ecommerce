@@ -18,6 +18,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react"
 export default function SignupPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -44,7 +46,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      const result = await signup(email, password, name)
+      const result = await signup(email, password, name, phone, address)
       if (result.success) {
         router.push("/")
       } else {
@@ -83,6 +85,18 @@ export default function SignupPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ປ້ອນຊື່ເຕັມຂອງທ່ານ"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">ເບີໂທ</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="020-xxx-xxxx"
                     required
                   />
                 </div>
@@ -130,6 +144,18 @@ export default function SignupPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="ຢືນຢັນລະຫັດຜ່ານຂອງທ່ານ"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">ທີ່ຢູ່</Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="ປ້ອນທີ່ຢູ່ຈັດສົ່ງຂອງທ່ານ"
                     required
                   />
                 </div>
