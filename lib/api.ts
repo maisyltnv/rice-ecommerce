@@ -236,6 +236,50 @@ export interface CustomerInfo {
     lastName?: string
 }
 
+export interface CustomerRegistrationRequest {
+    name: string
+    email: string
+    password: string
+    phone: string
+    address: string
+}
+
+export interface CustomerRegistrationResponse {
+    success: boolean
+    token?: string
+    customer?: {
+        id: number
+        name: string
+        email: string
+        phone?: string
+    }
+    error?: string
+    message?: string
+}
+
+export interface Customer {
+    id: number
+    name: string
+    email: string
+    phone?: string
+    address?: string
+}
+
+export interface CustomerUpdateRequest {
+    name?: string
+    email?: string
+    phone?: string
+    address?: string
+    password?: string
+}
+
+export interface CustomerResponse {
+    success: boolean
+    customer?: Customer
+    error?: string
+    message?: string
+}
+
 export interface ShippingAddress {
     street: string
     city: string
@@ -332,6 +376,50 @@ export async function updateOrderStatusAPI(orderId: number | string, status: str
         return { success: true, order: responseData }
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function registerCustomerAPI(payload: CustomerRegistrationRequest): Promise<CustomerRegistrationResponse> {
+    try {
+        const res = await fetch(`${API_BASE_URL}/customers/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        })
+
+        const text = await res.text()
+        let data: any
+        try {
+            data = JSON.parse(text)
+        } catch {
+            data = { message: text }
+        }
+
+        if (!res.ok) {
+            return {
+                success: false,
+                error: data.message || data.error || `HTTP ${res.status}: ${res.statusText}`,
+            }
+        }
+
+        const customer = data?.customer || data?.data?.customer
+        const token = data?.token || data?.data?.token
+        const message = data?.message || data?.data?.message
+
+        return {
+            success: true,
+            customer,
+            token,
+            message,
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Network error occurred',
+        }
     }
 }
 
@@ -543,6 +631,58 @@ export async function fetchOrderByIdAPI(orderId: number | string): Promise<{ suc
         const data = await res.json()
         const responseData = data?.data || data
         return { success: true, order: responseData }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function fetchCustomerByIdAPI(customerId: number | string): Promise<CustomerResponse> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const res = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || err.error || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        const customer = responseData?.customer || responseData
+        return { success: true, customer }
+    } catch (error) {
+        return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
+    }
+}
+
+export async function updateCustomerAPI(customerId: number | string, updates: CustomerUpdateRequest): Promise<CustomerResponse> {
+    try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth-token') : null
+        const res = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(updates),
+        })
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            return { success: false, error: err.message || err.error || `HTTP ${res.status}: ${res.statusText}` }
+        }
+
+        const data = await res.json()
+        const responseData = data?.data || data
+        const customer = responseData?.customer || responseData
+        return { success: true, customer }
     } catch (error) {
         return { success: false, error: error instanceof Error ? error.message : 'Network error occurred' }
     }

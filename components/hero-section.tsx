@@ -15,7 +15,7 @@ export function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="font-playfair text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 text-balance">
-            ເຂົ້າຄຸນນະພາບດີ
+            ເຂົ້າຄຸນນະພາບດີ test
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
             ເຂົ້າຫອມ ອ່ອນນຸ່ມ ພ້ອມດ້ວຍໂພສະນາການ
