@@ -32,6 +32,7 @@ export interface User {
   id: string
   email: string
   name: string
+  phone?: string
   address?: {
     street: string
     city: string

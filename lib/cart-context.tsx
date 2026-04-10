@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useReducer, useEffect, useCallback } from "react"
+import { createContext, useContext, useReducer, useEffect, useCallback, useState } from "react"
 import type { Product, CartItem } from "./types"
 import { useAuth } from "./auth-context"
 import {
@@ -109,6 +109,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     itemCount: 0,
   })
   const { isAuthenticated } = useAuth()
+  const [isClearingCart, setIsClearingCart] = useState(false)
 
   const createProductFromSnapshot = useCallback((item: BackendCartItem): Product => {
     return {
@@ -168,12 +169,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [mapBackendCart])
 
   useEffect(() => {
+    // Don't reload cart if we're in the process of clearing it
+    if (isClearingCart) {
+      return
+    }
+    
     if (isAuthenticated) {
       void loadRemoteCart()
     } else {
       loadLocalCart()
     }
-  }, [isAuthenticated, loadLocalCart, loadRemoteCart])
+  }, [isAuthenticated, loadLocalCart, loadRemoteCart, isClearingCart])
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
@@ -234,19 +240,49 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   const clearCart = () => {
+    // Set flag to prevent reloading from backend
+    setIsClearingCart(true)
+    
+    // Clear cart immediately in local state first (optimistic update)
+    dispatch({ type: "CLEAR_CART" })
+    // Also clear localStorage immediately
+    localStorage.removeItem("rice-cart")
+    
+    // Then clear on backend if authenticated
     if (isAuthenticated) {
       void (async () => {
-        const response = await clearCartAPI()
-        if (response.success && response.cart) {
-          dispatch({ type: "LOAD_CART", items: mapBackendCart(response.cart) })
-        } else if (response.success) {
-          dispatch({ type: "CLEAR_CART" })
-        } else if (response.error) {
-          console.error("Failed to clear cart:", response.error)
+        try {
+          const response = await clearCartAPI()
+          if (response.success) {
+            // If API returns empty cart, we're good (already cleared)
+            // If API returns cart with items, make sure it's cleared
+            if (response.cart && response.cart.items && response.cart.items.length > 0) {
+              // Backend still has items, ensure local state is cleared
+              dispatch({ type: "CLEAR_CART" })
+              localStorage.removeItem("rice-cart")
+            }
+          } else if (response.error) {
+            console.error("Failed to clear cart on backend:", response.error)
+            // Cart is already cleared locally, so we continue
+          }
+          
+          // Reset flag after a short delay to allow backend to process
+          setTimeout(() => {
+            setIsClearingCart(false)
+          }, 1000)
+        } catch (error) {
+          console.error("Error clearing cart:", error)
+          // Cart is already cleared locally
+          setTimeout(() => {
+            setIsClearingCart(false)
+          }, 1000)
         }
       })()
     } else {
-      dispatch({ type: "CLEAR_CART" })
+      // For unauthenticated users, reset flag immediately
+      setTimeout(() => {
+        setIsClearingCart(false)
+      }, 100)
     }
   }
 

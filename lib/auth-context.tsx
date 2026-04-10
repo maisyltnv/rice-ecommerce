@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import type { User } from "./types"
+import { registerCustomerAPI, type CustomerRegistrationRequest } from "./api"
 
 interface AuthState {
   user: User | null
@@ -12,7 +13,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>
+  signup: (email: string, password: string, name: string, phone?: string, address?: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   updateProfile: (updates: Partial<User>) => void
 }
@@ -101,28 +102,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     name: string,
+    phone?: string,
+    address?: string,
   ): Promise<{ success: boolean; error?: string }> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Check if user already exists
-    const existingUser = mockUsers.find((u) => u.email === email)
-    if (existingUser) {
-      return { success: false, error: "User already exists" }
-    }
-
-    // Create new user
-    const newUser: User = {
-      id: Date.now().toString(),
+    const payload: CustomerRegistrationRequest = {
       email,
+      password,
       name,
+      phone: phone || "",
+      address: address || "",
     }
 
-    // In a real app, you'd save to database
-    mockUsers.push(newUser)
+    const response = await registerCustomerAPI(payload)
 
-    // Save user to localStorage and update state
+    if (!response.success || !response.customer || !response.token) {
+      return {
+        success: false,
+        error: response.error || response.message || "Signup failed",
+      }
+    }
+
+    const newUser: User = {
+      id: String(response.customer.id),
+      email: response.customer.email,
+      name: response.customer.name,
+      phone: response.customer.phone,
+    }
+
     localStorage.setItem("rice-user", JSON.stringify(newUser))
+    localStorage.setItem("auth-token", response.token)
+
     setState({
       user: newUser,
       isLoading: false,
